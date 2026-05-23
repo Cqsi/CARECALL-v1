@@ -50,7 +50,8 @@ export async function startElevenLabsOutboundCall(request: OutboundCallRequest):
     type: "conversation_initiation_client_data",
     dynamic_variables: {
       customer_name: config.customerName,
-      call_instructions: instructions
+      call_instructions: instructions,
+      call_type: "manual"
     }
   };
 
@@ -60,7 +61,7 @@ export async function startElevenLabsOutboundCall(request: OutboundCallRequest):
         first_message: `Hi ${config.customerName}, this is CareCall. I am calling for a quick check-in.`,
         prompt: {
           prompt: [
-            `You are CareCall, making an outbound welfare check-in call to ${config.customerName}.`,
+            `You are CareCall, making a manual outbound welfare follow-up call to ${config.customerName}.`,
             "Follow this specific instruction from the care dashboard:",
             instructions,
             "Keep the tone warm, concise, and calm. Ask follow-up questions if the answer suggests risk, discomfort, confusion, loneliness, medication issues, or mobility trouble.",
