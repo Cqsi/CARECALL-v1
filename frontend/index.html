@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareCall — Welfare Monitoring</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="login-left">
+    <div class="brand"><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 5 6.5 5 9 5 12 8 12 8s3-3 5.5-3C21 5 23.5 8.5 21.5 12.5 19 16.65 12 21 12 21z"/></svg></span>CareCall</div>
+    <div class="login-tag">
+      <h1>Welfare you can hear before it becomes a crisis.</h1>
+      <p>Daily voice check-ins for residents living alone. Natural conversation, automatic wellbeing signals, and human escalation the moment something changes.</p>
+    </div>
+    <div class="login-foot">
+      <strong>Hosted in the EU · Processed on sovereign infrastructure</strong><br>
+      GDPR-compliant by design. Data never leaves national borders.
+    </div>
+  </div>
+  <div class="login-right">
+    <div class="login-card">
+      <h2>Sign in</h2>
+      <div class="sub">Municipal welfare monitoring console</div>
+      <div class="field"><label>Work email</label><input id="email" type="email" placeholder="name@kaupunki.fi" value="demo@carecall.fi"></div>
+      <div class="field"><label>Password</label><input id="pass" type="password" placeholder="••••••••" value="demo"></div>
+      <button class="btn" onclick="doLogin()">Sign in to console</button>
+      <div class="err" id="loginErr">Incorrect credentials. Use the demo login below.</div>
+      <div class="hint">Demo access — email <code>demo@carecall.fi</code> · password <code>demo</code></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand"><span class="dot" style="width:30px;height:30px"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 5 6.5 5 9 5 12 8 12 8s3-3 5.5-3C21 5 23.5 8.5 21.5 12.5 19 16.65 12 21 12 21z"/></svg></span>CareCall</div>
+      <nav class="nav">
+        <div class="nav-label">Monitoring</div>
+        <a data-view="overview" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Overview</a>
+        <a data-view="residents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>Residents</a>
+        <a data-view="calls"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Call log</a>
+        <a data-view="alerts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Alerts <span id="alertCount" style="margin-left:auto;background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:10px">5</span></a>
+        <div class="nav-label">Reporting</div>
+        <a data-view="cost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Cost &amp; impact</a>
+        <a data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</a>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="who">Turun kaupunki</div>
+        Home Care · West district<br>Signed in as demo
+        <div class="logout" onclick="doLogout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign out</div>
+      </div>
+    </aside>
+
+    <div class="main">
+      <div class="topbar">
+        <h1 id="pageTitle">Welfare overview</h1>
+        <div class="right">
+          <button class="sim-btn" onclick="simulateCall()">▸ Simulate incoming call</button>
+          <div class="live-pill"><span class="pulse"></span>Live — 3 calls active</div>
+        </div>
+      </div>
+
+      <div class="content">
+
+        <!-- OVERVIEW -->
+        <div class="view active" id="view-overview">
+          <div class="kpis">
+            <div class="kpi">
+              <div class="k-top"><span class="k-label">Residents monitored</span><span class="k-ic ic-grey"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span></div>
+              <div class="k-val">142</div>
+              <div class="k-sub"><span class="up">▲ 6</span> onboarded this week</div>
+            </div>
+            <div class="kpi">
+              <div class="k-top"><span class="k-label">Check-ins completed today</span><span class="k-ic ic-grey"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></span></div>
+              <div class="k-val">128<small> / 142</small></div>
+              <div class="k-sub"><span class="up">90.1%</span> reached &nbsp;·&nbsp; 14 pending</div>
+            </div>
+            <div class="kpi">
+              <div class="k-top"><span class="k-label">Open wellbeing alerts</span><span class="k-ic ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span></div>
+              <div class="k-val">5</div>
+              <div class="k-sub"><span class="down">1 urgent</span> · avg response 3m 41s</div>
+            </div>
+            <div class="kpi">
+              <div class="k-top"><span class="k-label">Est. monthly cost saving</span><span class="k-ic ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span></div>
+              <div class="k-val">€41.2k</div>
+              <div class="k-sub">vs. in-person welfare visits</div>
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="panel" style="margin-bottom:0">
+              <div class="panel-h"><h3>Residents needing attention</h3><span class="meta">Click a resident to open file</span></div>
+              <div class="panel-b"><table><thead><tr><th>Resident</th><th>Last check-in</th><th>Wellbeing trend</th><th>Status</th></tr></thead><tbody id="resTableMini"></tbody></table></div>
+            </div>
+            <div class="panel" style="margin-bottom:0">
+              <div class="panel-h"><h3>Recent alerts</h3><span class="meta">Auto-detected</span></div>
+              <div class="panel-b" id="alertListMini"></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-h"><h3>Today's call log</h3><span class="meta" id="callMetaMini"></span></div>
+            <div class="panel-b" id="callLogMini"></div>
+          </div>
+        </div>
+
+        <!-- RESIDENTS -->
+        <div class="view" id="view-residents">
+          <div class="toolbar">
+            <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="resSearch" placeholder="Search residents by name or district…" oninput="renderResidentsFull()"></div>
+            <div class="seg" id="resFilter">
+              <button class="on" data-f="all" onclick="setResFilter('all')">All</button>
+              <button data-f="alert" onclick="setResFilter('alert')">Action needed</button>
+              <button data-f="watch" onclick="setResFilter('watch')">Watch</button>
+              <button data-f="ok" onclick="setResFilter('ok')">Stable</button>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h3>All residents</h3><span class="meta" id="resCountMeta"></span></div>
+            <div class="panel-b"><table><thead><tr><th>Resident</th><th>District</th><th>Last check-in</th><th>Wellbeing trend</th><th>Status</th></tr></thead><tbody id="resTableFull"></tbody></table></div>
+          </div>
+        </div>
+
+        <!-- CALL LOG -->
+        <div class="view" id="view-calls">
+          <div class="toolbar">
+            <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="callSearch" placeholder="Search calls by resident…" oninput="renderCallsFull()"></div>
+            <div class="seg" id="callFilter">
+              <button class="on" data-f="all" onclick="setCallFilter('all')">All</button>
+              <button data-f="out" onclick="setCallFilter('out')">Outbound</button>
+              <button data-f="in" onclick="setCallFilter('in')">Inbound</button>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h3>Call log</h3><span class="meta" id="callCountMeta"></span></div>
+            <div class="panel-b" id="callLogFull"></div>
+          </div>
+        </div>
+
+        <!-- ALERTS -->
+        <div class="view" id="view-alerts">
+          <div class="toolbar">
+            <div class="seg" id="alertFilter">
+              <button class="on" data-f="all" onclick="setAlertFilter('all')">All alerts</button>
+              <button data-f="red" onclick="setAlertFilter('red')">Urgent</button>
+              <button data-f="amber" onclick="setAlertFilter('amber')">Watch</button>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h3>Wellbeing alerts</h3><span class="meta" id="alertCountMeta"></span></div>
+            <div class="panel-b" id="alertListFull"></div>
+          </div>
+        </div>
+
+        <!-- COST & IMPACT -->
+        <div class="view" id="view-cost">
+          <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+            <div class="kpi"><div class="k-top"><span class="k-label">Cost per welfare check</span></div><div class="k-val" style="color:var(--red)">€3.10</div><div class="k-sub">automated voice check-in</div></div>
+            <div class="kpi"><div class="k-top"><span class="k-label">Cost per in-person visit</span></div><div class="k-val">€48.00</div><div class="k-sub">incl. travel &amp; staff time</div></div>
+            <div class="kpi"><div class="k-top"><span class="k-label">Monthly saving (142 residents)</span></div><div class="k-val" style="color:var(--red)">€41.2k</div><div class="k-sub">daily check portion only</div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h3>Cost per daily welfare check</h3><span class="meta">Illustrative — replace with municipal figures</span></div>
+            <div class="panel-b pad">
+              <div class="bar-row"><div class="lbl">In-person home visit</div><div class="bar-track"><div class="bar-fill grey" style="width:100%">€48.00</div></div></div>
+              <div class="bar-row"><div class="lbl">CareCall voice check-in</div><div class="bar-track"><div class="bar-fill red" style="width:6.5%;min-width:54px">€3.10</div></div></div>
+            </div>
+            <div class="impact-note"><strong>How to read this:</strong> CareCall does not replace home visits — it replaces the <em>daily welfare check</em> portion for stable residents, freeing care staff to spend their visiting hours on people flagged as needing real attention. Figures shown are illustrative placeholders and must be validated against Turku home-care cost data before any procurement claim.</div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h3>Outcomes this month</h3></div>
+            <div class="panel-b pad">
+              <div class="bar-row"><div class="lbl">Daily checks delivered</div><div class="bar-track"><div class="bar-fill grey" style="width:94%">3,961 of 4,210</div></div></div>
+              <div class="bar-row"><div class="lbl">Issues caught early</div><div class="bar-track"><div class="bar-fill red" style="width:38%">37 escalations</div></div></div>
+              <div class="bar-row"><div class="lbl">Avg. response to urgent flag</div><div class="bar-track"><div class="bar-fill grey" style="width:22%">3m 41s</div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div class="view" id="view-settings">
+          <div class="panel">
+            <div class="panel-h"><h3>Call programme</h3></div>
+            <div class="panel-b">
+              <div class="set-row"><div><div class="si">Daily outbound check-ins</div><div class="sd">Automatically call each monitored resident once per day</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="set-row"><div><div class="si">Medication reminders</div><div class="sd">Voice prompt at each resident's scheduled dose time</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="set-row"><div><div class="si">Auto-retry on no answer</div><div class="sd">Retry twice, then escalate to the on-call team</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="set-row"><div><div class="si">Weekend calls</div><div class="sd">Run the check-in programme on Saturdays and Sundays</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h3>Escalation &amp; safety</h3></div>
+            <div class="panel-b">
+              <div class="set-row"><div><div class="si">Human escalation on distress</div><div class="sd">Route to on-call nurse the moment risk is detected — cannot be disabled</div></div><div class="toggle on" style="opacity:.6;cursor:not-allowed"></div></div>
+              <div class="set-row"><div><div class="si">Family notifications</div><div class="sd">Notify the registered next of kin on red-level flags</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="set-row"><div><div class="si">Resident consent required</div><div class="sd">No monitoring begins until consent is recorded — cannot be disabled</div></div><div class="toggle on" style="opacity:.6;cursor:not-allowed"></div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h3>Data &amp; residency</h3></div>
+            <div class="panel-b">
+              <div class="set-row"><div><div class="si">EU data residency</div><div class="sd">All voice data processed and stored within national borders</div></div><div class="toggle on" style="opacity:.6;cursor:not-allowed"></div></div>
+              <div class="set-row"><div><div class="si">Call recording retention</div><div class="sd">Transcripts kept 90 days, then anonymised</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DRAWER -->
+<div id="drawer">
+  <div class="scrim" onclick="closeDrawer()"></div>
+  <div class="sheet">
+    <div class="dr-head" id="drHead"></div>
+    <div class="dr-body" id="drBody"></div>
+  </div>
+</div>
+
+<!-- INCOMING CALL TOAST -->
+<div id="toast">
+  <div class="ring"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+  <div><div class="ti" id="toastTitle">Incoming call</div><div class="ts" id="toastSub">Connecting…</div></div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
