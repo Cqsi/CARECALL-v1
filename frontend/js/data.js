@@ -2,7 +2,7 @@
  *  DATA MODEL — your backend fills this from call webhooks in
  *  production. Dashboard only reads from here, so it never goes blank.
  * ------------------------------------------------------------------ */
-const residents = [
+const mockResidents = [
   { id:'r1', name:'Aino Virtanen', age:84, district:'Nummi', status:'alert', trend:[4,4,3,3,2,2,1], last:'Today 09:12', dir:'out', dur:'4m 18s',
     flag:{level:'red', title:'Possible fall / mobility change', detail:'Resident mentioned falling in the bathroom yesterday and feeling unsteady. No injury reported but a follow-up visit is recommended within 24h.'},
     transcript:[
@@ -79,7 +79,7 @@ const residents = [
     ]}
 ];
 
-const alerts = [
+const mockAlerts = [
   { resId:'r1', level:'red', title:'Aino Virtanen — fall reported', desc:'Mentioned a bathroom fall and unsteadiness. Routed to on-call nurse.', when:'9 min ago' },
   { resId:'r2', level:'amber', title:'Eero Lahtinen — low mood (day 3)', desc:'Declining sentiment + reduced appetite. Social referral suggested.', when:'1 h ago' },
   { resId:'r3', level:'amber', title:'Marja Koskinen — memory concern', desc:'Repeated questions, day disorientation. Flagged for screening.', when:'2 h ago' },
@@ -87,7 +87,7 @@ const alerts = [
   { resId:'r7', level:'amber', title:'Helena Aho — medication not confirmed', desc:'Did not confirm morning dose during call. Reminder re-sent.', when:'4 h ago' }
 ];
 
-const callLog = [
+const mockCallLog = [
   { resId:'r3', dir:'out', sub:'Outbound check-in · flagged', dur:'5m 33s', time:'09:40' },
   { resId:'r8', dir:'out', sub:'Outbound check-in · normal', dur:'3m 11s', time:'09:30' },
   { resId:'r1', dir:'out', sub:'Outbound check-in · escalated', dur:'4m 18s', time:'09:12' },
@@ -97,3 +97,13 @@ const callLog = [
   { resId:'r4', dir:'in',  sub:'Inbound · schedule change', dur:'2m 15s', time:'08:30' },
   { resId:'r5', dir:'out', sub:'Outbound check-in · normal', dur:'4m 02s', time:'08:11' }
 ];
+
+let residents = [];
+let alerts = [];
+let callLog = [];
+
+function useMockData(){
+  residents = mockResidents.map(r => ({...r, transcript:[...r.transcript]}));
+  alerts = mockAlerts.map(a => ({...a}));
+  callLog = mockCallLog.map(c => ({...c}));
+}
