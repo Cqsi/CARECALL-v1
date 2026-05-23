@@ -34,6 +34,7 @@ export const config = {
   elevenLabsAgentId: process.env.ELEVENLABS_AGENT_ID ?? "",
   elevenLabsAgentPhoneNumberId: process.env.ELEVENLABS_AGENT_PHONE_NUMBER_ID ?? "",
   elevenLabsOutboundProvider: process.env.ELEVENLABS_OUTBOUND_PROVIDER === "sip" ? "sip" : "twilio",
+  elevenLabsUseConversationOverrides: process.env.ELEVENLABS_USE_CONVERSATION_OVERRIDES === "true",
   corsOrigins: (process.env.CORS_ORIGIN ?? "http://localhost:3000,http://127.0.0.1:3000")
     .split(",")
     .map((origin) => origin.trim())

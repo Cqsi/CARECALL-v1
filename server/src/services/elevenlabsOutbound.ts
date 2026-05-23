@@ -46,31 +46,36 @@ export async function startElevenLabsOutboundCall(request: OutboundCallRequest):
     throw new Error("Please add a short description of what the agent should ask.");
   }
 
+  const conversationInitiationClientData: Record<string, unknown> = {
+    type: "conversation_initiation_client_data",
+    dynamic_variables: {
+      customer_name: config.customerName,
+      call_instructions: instructions
+    }
+  };
+
+  if (config.elevenLabsUseConversationOverrides) {
+    conversationInitiationClientData.conversation_config_override = {
+      agent: {
+        first_message: `Hi ${config.customerName}, this is CareCall. I am calling for a quick check-in.`,
+        prompt: {
+          prompt: [
+            `You are CareCall, making an outbound welfare check-in call to ${config.customerName}.`,
+            "Follow this specific instruction from the care dashboard:",
+            instructions,
+            "Keep the tone warm, concise, and calm. Ask follow-up questions if the answer suggests risk, discomfort, confusion, loneliness, medication issues, or mobility trouble.",
+            "At the end, briefly summarize what you will note for the care team."
+          ].join("\n\n")
+        }
+      }
+    };
+  }
+
   const body = {
     agent_id: config.elevenLabsAgentId,
     agent_phone_number_id: config.elevenLabsAgentPhoneNumberId,
     to_number: toNumber,
-    conversation_initiation_client_data: {
-      type: "conversation_initiation_client_data",
-      conversation_config_override: {
-        agent: {
-          first_message: `Hi ${config.customerName}, this is CareCall. I am calling for a quick check-in.`,
-          prompt: {
-            prompt: [
-              `You are CareCall, making an outbound welfare check-in call to ${config.customerName}.`,
-              "Follow this specific instruction from the care dashboard:",
-              instructions,
-              "Keep the tone warm, concise, and calm. Ask follow-up questions if the answer suggests risk, discomfort, confusion, loneliness, medication issues, or mobility trouble.",
-              "At the end, briefly summarize what you will note for the care team."
-            ].join("\n\n")
-          }
-        }
-      },
-      dynamic_variables: {
-        customer_name: config.customerName,
-        call_instructions: instructions
-      }
-    }
+    conversation_initiation_client_data: conversationInitiationClientData
   };
 
   const response = await fetch(endpoint(), {
