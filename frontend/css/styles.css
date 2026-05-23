@@ -39,8 +39,9 @@
   .login-card .sub{color:var(--grey);font-size:14px;margin-bottom:28px}
   .field{margin-bottom:16px}
   .field label{display:block;font-size:12.5px;font-weight:600;color:var(--grey);margin-bottom:7px;text-transform:uppercase;letter-spacing:.04em}
-  .field input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:8px;font-size:14.5px;font-family:inherit;background:#fff;transition:border .15s,box-shadow .15s}
-  .field input:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
+  .field input,.field textarea{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:8px;font-size:14.5px;font-family:inherit;background:#fff;transition:border .15s,box-shadow .15s}
+  .field textarea{resize:vertical;line-height:1.45}
+  .field input:focus,.field textarea:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
   .btn{width:100%;padding:13px;border:none;border-radius:8px;background:var(--red);color:#fff;font-family:inherit;font-size:14.5px;font-weight:600;cursor:pointer;transition:background .15s,transform .05s}
   .btn:hover{background:var(--red-dark)}
   .btn:active{transform:translateY(1px)}
@@ -218,6 +219,20 @@
   .toggle.on{background:var(--red)}
   .toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s}
   .toggle.on::after{left:21px}
+
+  /* outbound call modal */
+  #callModal{position:fixed;inset:0;z-index:70;display:none}
+  .modal-scrim{position:absolute;inset:0;background:rgba(31,31,34,.38);backdrop-filter:blur(1px)}
+  .modal-card{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(520px,calc(100vw - 32px));background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 20px 70px rgba(31,31,34,.28);overflow:hidden}
+  .modal-head{display:flex;justify-content:space-between;gap:16px;padding:18px 20px;border-bottom:1px solid var(--line)}
+  .modal-head h3{font-size:16px;font-weight:600}
+  .modal-head p{font-size:12.5px;color:var(--grey);margin-top:4px}
+  .modal-body{padding:18px 20px 20px}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
+  .modal-actions button{font-family:inherit;font-size:13px;font-weight:600;padding:10px 14px;border-radius:8px;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--grey-dark)}
+  .modal-actions button:hover{background:var(--grey-soft)}
+  .modal-actions button.primary{background:var(--red);color:#fff;border-color:var(--red)}
+  .modal-actions button.primary:hover{background:var(--red-dark)}
 
   /* incoming call toast */
   #toast{position:fixed;bottom:24px;right:24px;z-index:60;background:var(--grey-dark);color:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 16px 48px rgba(31,31,34,.4);display:none;align-items:center;gap:14px;min-width:300px;animation:slide .3s ease}

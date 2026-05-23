@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import { config } from "./config.js";
 import { createDatabase } from "./db.js";
+import { callsRouter } from "./routes/calls.js";
 import { createDashboardRouter } from "./routes/dashboard.js";
 import { createElevenLabsRouter } from "./routes/elevenlabs.js";
 import { healthRouter } from "./routes/health.js";
@@ -37,6 +38,7 @@ async function main(): Promise<void> {
 
   app.use("/api/health", healthRouter);
   app.use("/api/dashboard", createDashboardRouter(db));
+  app.use("/api/calls", callsRouter);
   app.use("/api/elevenlabs", createElevenLabsRouter(db));
 
   app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

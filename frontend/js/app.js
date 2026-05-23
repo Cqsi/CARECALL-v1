@@ -269,10 +269,48 @@ function openResident(id){
 function closeDrawer(){document.getElementById('drawer').style.display='none';}
 function drawerAction(kind,id){
   const r=byId(id); if(!r)return;
+  if(kind==='call'){
+    openOutboundCallModal(r);
+    return;
+  }
   const msgs={escalate:`Escalated ${r.name} to the on-call nurse.`,call:`Placing a call to ${r.name}…`,resolve:`${r.name} marked as reviewed.`};
   showToast(kind==='call'?'Calling…':'Done', msgs[kind]);
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
+
+function openOutboundCallModal(r){
+  document.getElementById('callModalSub').textContent=`Start an outbound CareCall check-in for ${r.name}.`;
+  document.getElementById('callPhone').value=localStorage.getItem('CARECALL_TARGET_PHONE') || '';
+  document.getElementById('callInstructions').value=localStorage.getItem('CARECALL_LAST_INSTRUCTIONS') || `Ask ${r.name} how they are feeling right now, whether they have eaten and slept well, and whether there is anything worrying or unusual today.`;
+  document.getElementById('callModal').style.display='block';
+}
+
+function closeCallModal(){
+  document.getElementById('callModal').style.display='none';
+}
+
+async function submitOutboundCall(){
+  const toNumber=document.getElementById('callPhone').value.trim();
+  const instructions=document.getElementById('callInstructions').value.trim();
+  localStorage.setItem('CARECALL_TARGET_PHONE', toNumber);
+  localStorage.setItem('CARECALL_LAST_INSTRUCTIONS', instructions);
+
+  try{
+    showToast('Starting call', 'Sending instructions to ElevenLabs…', 3000);
+    const res=await fetch(`${API_BASE_URL}/api/calls/outbound`, {
+      method:'POST',
+      headers:{'content-type':'application/json'},
+      body:JSON.stringify({toNumber,instructions})
+    });
+    const payload=await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(payload.error || payload.message || `Backend returned ${res.status}`);
+    closeCallModal();
+    showToast('Call started', payload.conversationId ? `Conversation ${payload.conversationId} initiated.` : 'ElevenLabs accepted the outbound call.');
+  }catch(err){
+    console.error(err);
+    showToast('Call failed', err.message || 'Could not start the outbound call.');
+  }
+}
 
 /* ---------- TOAST + LIVE CALL SIM ---------- */
 function showToast(title,sub,ms=3500){
