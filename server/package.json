@@ -13,7 +13,6 @@
     "ngrok": "ngrok http 3001"
   },
   "dependencies": {
-    "@elevenlabs/elevenlabs-js": "^2.49.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { config } from "../config.js";
 import type { CareCallDatabase } from "../db.js";
 import { normalizeElevenLabsWebhook } from "../services/elevenlabsWebhookMapper.js";
@@ -15,9 +15,29 @@ function isAuthorized(reqToken: unknown, headerToken: unknown): boolean {
   return reqToken === config.elevenLabsWebhookToken || headerToken === config.elevenLabsWebhookToken;
 }
 
+function verifyElevenLabsSignature(rawBody: string, signatureHeader: string, secret: string): boolean {
+  const parts = signatureHeader.split(",").map((part) => part.trim());
+  const timestamp = parts.find((part) => part.startsWith("t="))?.slice(2);
+  const signature = parts.find((part) => part.startsWith("v0="));
+
+  if (!timestamp || !signature) {
+    return false;
+  }
+
+  const timestampMillis = Number(timestamp) * 1000;
+  const thirtyMinutesAgo = Date.now() - 30 * 60 * 1000;
+  if (!Number.isFinite(timestampMillis) || timestampMillis < thirtyMinutesAgo) {
+    return false;
+  }
+
+  const expected = `v0=${createHmac("sha256", secret).update(`${timestamp}.${rawBody}`).digest("hex")}`;
+  const expectedBytes = Buffer.from(expected);
+  const signatureBytes = Buffer.from(signature);
+  return expectedBytes.length === signatureBytes.length && timingSafeEqual(expectedBytes, signatureBytes);
+}
+
 export function createElevenLabsRouter(db: CareCallDatabase): Router {
   const router = Router();
-  const elevenlabs = new ElevenLabsClient();
 
   router.post("/webhook", async (req, res, next) => {
     try {
@@ -30,7 +50,11 @@ export function createElevenLabsRouter(db: CareCallDatabase): Router {
           res.status(401).json({ error: "Missing ElevenLabs webhook signature." });
           return;
         }
-        payload = await elevenlabs.webhooks.constructEvent(rawBody, signature, config.elevenLabsWebhookSecret);
+        if (!verifyElevenLabsSignature(rawBody, signature, config.elevenLabsWebhookSecret)) {
+          res.status(401).json({ error: "Invalid ElevenLabs webhook signature." });
+          return;
+        }
+        payload = JSON.parse(rawBody);
       } else {
         if (!isAuthorized(req.query.token, req.header("x-carecall-webhook-token"))) {
           res.status(401).json({ error: "Unauthorized webhook request." });
