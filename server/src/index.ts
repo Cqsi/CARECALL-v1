@@ -28,7 +28,12 @@ async function main(): Promise<void> {
 
   const app = express();
   app.use(cors(createCorsOptions()));
-  app.use(express.json({ limit: "2mb" }));
+  app.use(express.json({
+    limit: "2mb",
+    verify: (req, _res, buf) => {
+      (req as express.Request & { rawBody?: string }).rawBody = buf.toString("utf8");
+    }
+  }));
 
   app.use("/api/health", healthRouter);
   app.use("/api/dashboard", createDashboardRouter(db));

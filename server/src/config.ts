@@ -29,6 +29,7 @@ export const config = {
   databaseSsl: process.env.DATABASE_SSL === "true",
   customerName: process.env.CUSTOMER_NAME ?? "Casimir",
   elevenLabsWebhookToken: process.env.ELEVENLABS_WEBHOOK_TOKEN ?? "",
+  elevenLabsWebhookSecret: process.env.ELEVENLABS_WEBHOOK_SECRET ?? "",
   corsOrigins: (process.env.CORS_ORIGIN ?? "http://localhost:3000,http://127.0.0.1:3000")
     .split(",")
     .map((origin) => origin.trim())
