@@ -1,20 +1,43 @@
 /* ---------- AUTH ---------- */
+let authToken = sessionStorage.getItem('CARECALL_AUTH_TOKEN') || '';
+
+function authHeaders(){
+  return authToken ? { authorization: `Bearer ${authToken}` } : {};
+}
+
 async function doLogin(){
   const e=document.getElementById('email').value.trim().toLowerCase();
   const p=document.getElementById('pass').value;
-  if(e==='demo@carecall.fi' && p==='demo'){
+  document.getElementById('loginErr').style.display='none';
+  try{
+    const res=await fetch(`${API_BASE_URL}/api/auth/login`, {
+      method:'POST',
+      headers:{'content-type':'application/json'},
+      body:JSON.stringify({email:e,password:p})
+    });
+    const payload=await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(payload.error || 'Invalid email or password.');
+    authToken=payload.token;
+    sessionStorage.setItem('CARECALL_AUTH_TOKEN', authToken);
+    sessionStorage.setItem('CARECALL_AUTH_EMAIL', e);
+    document.getElementById('signedInMeta').textContent=`Signed in as ${e}`;
+    document.getElementById('pass').value='';
     document.getElementById('login').style.display='none';
     document.getElementById('app').style.display='block';
     await refreshDashboardData();
     renderAll();
-  } else {
+  }catch(err){
+    document.getElementById('loginErr').textContent=err.message || 'Incorrect email or password.';
     document.getElementById('loginErr').style.display='block';
   }
 }
 function doLogout(){
+  authToken='';
+  sessionStorage.removeItem('CARECALL_AUTH_TOKEN');
+  sessionStorage.removeItem('CARECALL_AUTH_EMAIL');
   document.getElementById('app').style.display='none';
   document.getElementById('login').style.display='flex';
-  document.getElementById('pass').value='demo';
+  document.getElementById('pass').value='';
   closeDrawer();
 }
 document.getElementById('pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
@@ -130,7 +153,11 @@ function applyDashboardPayload(payload){
 
 async function refreshDashboardData(){
   try{
-    const res=await fetch(`${API_BASE_URL}/api/dashboard`);
+    const res=await fetch(`${API_BASE_URL}/api/dashboard`, {headers:authHeaders()});
+    if(res.status===401){
+      doLogout();
+      throw new Error('Please sign in again.');
+    }
     if(!res.ok) throw new Error(`Backend returned ${res.status}`);
     const payload=await res.json();
     applyDashboardPayload(payload);
@@ -299,9 +326,13 @@ async function submitOutboundCall(){
     showToast('Starting call', 'Sending instructions to ElevenLabs…', 3000);
     const res=await fetch(`${API_BASE_URL}/api/calls/outbound`, {
       method:'POST',
-      headers:{'content-type':'application/json'},
+      headers:{'content-type':'application/json', ...authHeaders()},
       body:JSON.stringify({toNumber,instructions})
     });
+    if(res.status===401){
+      doLogout();
+      throw new Error('Please sign in again.');
+    }
     const payload=await res.json().catch(()=>({}));
     if(!res.ok) throw new Error(payload.error || payload.message || `Backend returned ${res.status}`);
     closeCallModal();

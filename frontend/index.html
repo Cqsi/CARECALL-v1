@@ -28,11 +28,11 @@
     <div class="login-card">
       <h2>Sign in</h2>
       <div class="sub">Municipal welfare monitoring console</div>
-      <div class="field"><label>Work email</label><input id="email" type="email" placeholder="name@kaupunki.fi" value="demo@carecall.fi"></div>
-      <div class="field"><label>Password</label><input id="pass" type="password" placeholder="••••••••" value="demo"></div>
+      <div class="field"><label>Work email</label><input id="email" type="email" placeholder="name@carecall.fi" autocomplete="username"></div>
+      <div class="field"><label>Password</label><input id="pass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
       <button class="btn" onclick="doLogin()">Sign in to console</button>
-      <div class="err" id="loginErr">Incorrect credentials. Use the demo login below.</div>
-      <div class="hint">Demo access — email <code>demo@carecall.fi</code> · password <code>demo</code></div>
+      <div class="err" id="loginErr">Incorrect email or password.</div>
+      <div class="hint">Use the private demo credentials provided by the CareCall team.</div>
     </div>
   </div>
 </div>
@@ -54,7 +54,7 @@
       </nav>
       <div class="sidebar-foot">
         <div class="who">Turun kaupunki</div>
-        Home Care · West district<br>Signed in as demo
+        Home Care · West district<br><span id="signedInMeta">Signed in</span>
         <div class="logout" onclick="doLogout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign out</div>
       </div>
     </aside>

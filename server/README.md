@@ -77,3 +77,22 @@ npm run dev
 ```
 
 Storage buckets can be added later for audio files or raw webhook archives. For the first dashboard, structured call data belongs in Postgres.
+
+## Dashboard login
+
+The frontend never stores the password. It posts credentials to the backend and stores a short-lived signed token in `sessionStorage`.
+
+Set these in `.env`:
+
+```env
+AUTH_EMAIL=your-demo-email@example.com
+AUTH_PASSWORD=use-a-private-demo-password
+AUTH_SECRET=generate-a-long-random-value
+AUTH_TOKEN_TTL_SECONDS=28800
+```
+
+Generate a local secret with:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
+```

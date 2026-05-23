@@ -21,6 +21,15 @@ function readPort(): number {
   return port;
 }
 
+function readAuthTokenTtlSeconds(): number {
+  const raw = process.env.AUTH_TOKEN_TTL_SECONDS ?? "28800";
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value < 60) {
+    throw new Error(`Invalid AUTH_TOKEN_TTL_SECONDS "${raw}".`);
+  }
+  return value;
+}
+
 export const config = {
   port: readPort(),
   nodeEnv: process.env.NODE_ENV ?? "development",
@@ -28,6 +37,10 @@ export const config = {
   databaseUrl: process.env.DATABASE_URL ?? "file:./data/carecall.db",
   databaseSsl: process.env.DATABASE_SSL === "true",
   customerName: process.env.CUSTOMER_NAME ?? "Casimir",
+  authEmail: process.env.AUTH_EMAIL ?? "",
+  authPassword: process.env.AUTH_PASSWORD ?? "",
+  authSecret: process.env.AUTH_SECRET ?? "",
+  authTokenTtlSeconds: readAuthTokenTtlSeconds(),
   elevenLabsWebhookToken: process.env.ELEVENLABS_WEBHOOK_TOKEN ?? "",
   elevenLabsWebhookSecret: process.env.ELEVENLABS_WEBHOOK_SECRET ?? "",
   elevenLabsApiKey: process.env.ELEVENLABS_API_KEY ?? "",
