@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareCall — Welfare Monitoring</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red:#c1272d;
+    --red-dark:#9c1f24;
+    --red-soft:#fbe7e8;
+    --red-mid:#f3c3c5;
+    --ink:#1f1f22;
+    --paper:#f3f3f4;
+    --card:#ffffff;
+    --line:#e2e2e4;
+    --line-2:#ededee;
+    --grey:#6b6b70;
+    --grey-2:#9a9aa0;
+    --grey-3:#c4c4c8;
+    --grey-soft:#ececed;
+    --grey-dark:#3a3a3d;
+    --radius:10px;
+    --shadow:0 1px 2px rgba(31,31,34,.05),0 8px 24px rgba(31,31,34,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'IBM Plex Sans',sans-serif;background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  /* ---------- LOGIN ---------- */
+  #login{position:fixed;inset:0;z-index:50;display:flex;background:var(--grey-dark);}
+  .login-left{flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:48px;color:#fff;background:
+     radial-gradient(1200px 500px at -10% 0%, rgba(193,39,45,.28), transparent 60%),
+     radial-gradient(900px 600px at 110% 100%, rgba(58,58,61,.7), transparent 55%),
+     var(--grey-dark);}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:600;font-size:20px;letter-spacing:-.01em;}
+  .brand .dot{width:34px;height:34px;border-radius:9px;background:linear-gradient(150deg,var(--red),var(--red-dark));display:grid;place-items:center;box-shadow:0 6px 18px rgba(193,39,45,.45);}
+  .brand .dot svg{width:20px;height:20px}
+  .login-tag{max-width:420px}
+  .login-tag h1{font-family:'Fraunces',serif;font-weight:500;font-size:42px;line-height:1.08;letter-spacing:-.02em;margin-bottom:16px;}
+  .login-tag p{color:#c9c9cd;font-size:15px;line-height:1.6}
+  .login-foot{font-size:12.5px;color:#9a9aa0;line-height:1.7}
+  .login-foot strong{color:#d7d7da;font-weight:600}
+  .login-right{width:440px;background:var(--paper);display:flex;flex-direction:column;justify-content:center;padding:48px;}
+  .login-card h2{font-family:'Fraunces',serif;font-weight:500;font-size:26px;margin-bottom:6px}
+  .login-card .sub{color:var(--grey);font-size:14px;margin-bottom:28px}
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--grey);margin-bottom:7px;text-transform:uppercase;letter-spacing:.04em}
+  .field input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:8px;font-size:14.5px;font-family:inherit;background:#fff;transition:border .15s,box-shadow .15s}
+  .field input:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
+  .btn{width:100%;padding:13px;border:none;border-radius:8px;background:var(--red);color:#fff;font-family:inherit;font-size:14.5px;font-weight:600;cursor:pointer;transition:background .15s,transform .05s}
+  .btn:hover{background:var(--red-dark)}
+  .btn:active{transform:translateY(1px)}
+  .hint{margin-top:18px;padding:11px 13px;background:#fff;border:1px dashed var(--line);border-radius:8px;font-size:12.5px;color:var(--grey)}
+  .hint code{font-family:'IBM Plex Mono',monospace;color:var(--red);font-weight:500}
+  .err{color:var(--red);font-size:13px;margin-top:10px;display:none}
+
+  /* ---------- APP SHELL ---------- */
+  #app{display:none;min-height:100vh}
+  .layout{display:flex;min-height:100vh}
+  .sidebar{width:240px;background:var(--grey-dark);color:#c9c9cd;display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;}
+  .sidebar .brand{padding:22px 22px;color:#fff;font-size:18px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .nav{padding:14px 12px;flex:1}
+  .nav-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:#86868c;padding:14px 12px 8px}
+  .nav a{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:8px;color:#b6b6bb;text-decoration:none;font-size:14px;font-weight:500;cursor:pointer;transition:background .12s,color .12s}
+  .nav a svg{width:17px;height:17px;opacity:.85}
+  .nav a:hover{background:rgba(255,255,255,.06);color:#fff}
+  .nav a.active{background:var(--red);color:#fff}
+  .nav a.active svg{opacity:1}
+  .sidebar-foot{padding:16px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:#86868c}
+  .sidebar-foot .who{color:#c9c9cd;font-weight:600;font-size:13px}
+  .sidebar-foot .logout{margin-top:10px;display:inline-flex;align-items:center;gap:6px;color:#b6b6bb;cursor:pointer;font-weight:500}
+  .sidebar-foot .logout:hover{color:#fff}
+  .sidebar-foot .logout svg{width:14px;height:14px}
+
+  .main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-width:0}
+  .topbar{height:62px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:10}
+  .topbar h1{font-size:17px;font-weight:600;letter-spacing:-.01em}
+  .topbar .right{display:flex;align-items:center;gap:14px}
+  .live-pill{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--red);font-weight:600;background:var(--red-soft);padding:6px 11px;border-radius:20px}
+  .live-pill .pulse{width:8px;height:8px;border-radius:50%;background:var(--red);animation:pulse 1.6s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(193,39,45,.5)}70%{box-shadow:0 0 0 7px rgba(193,39,45,0)}100%{box-shadow:0 0 0 0 rgba(193,39,45,0)}}
+  .sim-btn{font-family:inherit;font-size:12.5px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--grey-dark);padding:7px 13px;border-radius:7px;cursor:pointer;transition:all .12s}
+  .sim-btn:hover{background:var(--grey-dark);color:#fff;border-color:var(--grey-dark)}
+
+  .content{padding:26px 28px 60px;max-width:1280px}
+  .view{display:none}
+  .view.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* KPI ROW */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .kpi .k-top{display:flex;justify-content:space-between;align-items:flex-start}
+  .kpi .k-label{font-size:12.5px;color:var(--grey);font-weight:500}
+  .kpi .k-ic{width:32px;height:32px;border-radius:8px;display:grid;place-items:center}
+  .kpi .k-ic svg{width:17px;height:17px}
+  .kpi .k-val{font-family:'Fraunces',serif;font-size:34px;font-weight:500;letter-spacing:-.02em;margin-top:10px;line-height:1}
+  .kpi .k-val small{font-size:16px;color:var(--grey-2);font-family:'IBM Plex Sans'}
+  .kpi .k-sub{font-size:12px;margin-top:8px;display:flex;align-items:center;gap:5px;color:var(--grey)}
+  .k-sub .up{color:var(--grey-dark);font-weight:600}
+  .k-sub .down{color:var(--red);font-weight:600}
+  .ic-red{background:var(--red-soft);color:var(--red)}
+  .ic-grey{background:var(--grey-soft);color:var(--grey-dark)}
+
+  /* GRID */
+  .grid{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;margin-bottom:18px}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:18px}
+  .panel:last-child{margin-bottom:0}
+  .panel-h{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .panel-h h3{font-size:14.5px;font-weight:600}
+  .panel-h .meta{font-size:12px;color:var(--grey-2)}
+  .panel-b{padding:6px 0}
+  .panel-b.pad{padding:18px}
+
+  /* TABLE */
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--grey-2);font-weight:600;padding:10px 18px;border-bottom:1px solid var(--line)}
+  td{padding:12px 18px;font-size:13.5px;border-bottom:1px solid var(--line-2)}
+  tr.row{cursor:pointer;transition:background .1s}
+  tr.row:hover{background:#faf7f7}
+  tr.row:last-child td{border-bottom:none}
+  .person{display:flex;align-items:center;gap:11px}
+  .avatar{width:34px;height:34px;border-radius:50%;background:var(--grey-dark);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:600;flex-shrink:0}
+  .person .nm{font-weight:600;font-size:13.5px}
+  .person .ag{font-size:12px;color:var(--grey-2)}
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:20px}
+  .b-ok{background:var(--grey-soft);color:var(--grey-dark)}
+  .b-watch{background:var(--red-soft);color:var(--red)}
+  .b-alert{background:var(--red);color:#fff}
+  .b-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+  /* ALERTS LIST */
+  .alert-item{padding:13px 18px;border-bottom:1px solid var(--line-2);display:flex;gap:12px;cursor:pointer;transition:background .1s}
+  .alert-item:hover{background:#faf7f7}
+  .alert-item:last-child{border-bottom:none}
+  .alert-ic{width:30px;height:30px;border-radius:7px;flex-shrink:0;display:grid;place-items:center}
+  .alert-ic svg{width:15px;height:15px}
+  .alert-meta{flex:1;min-width:0}
+  .alert-meta .t{font-size:13px;font-weight:600;margin-bottom:2px}
+  .alert-meta .d{font-size:12px;color:var(--grey);line-height:1.4}
+  .alert-meta .when{font-size:11px;color:var(--grey-2);margin-top:4px}
+
+  /* CALL LOG */
+  .call-row{display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--line-2);cursor:pointer;transition:background .1s}
+  .call-row:hover{background:#faf7f7}
+  .call-row:last-child{border-bottom:none}
+  .dir{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;flex-shrink:0}
+  .dir svg{width:14px;height:14px}
+  .dir-out{background:var(--grey-soft);color:var(--grey-dark)}
+  .dir-in{background:var(--red-soft);color:var(--red)}
+  .call-main{flex:1;min-width:0}
+  .call-main .nm{font-size:13.5px;font-weight:600}
+  .call-main .sub{font-size:12px;color:var(--grey-2)}
+  .call-dur{font-size:12.5px;color:var(--grey);font-family:'IBM Plex Mono'}
+  .call-time{font-size:12px;color:var(--grey-2);width:74px;text-align:right;font-family:'IBM Plex Mono'}
+
+  /* SEARCH / FILTER BAR */
+  .toolbar{display:flex;gap:10px;margin-bottom:18px;align-items:center;flex-wrap:wrap}
+  .search{flex:1;min-width:220px;position:relative}
+  .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--grey-2)}
+  .search input{width:100%;padding:10px 12px 10px 36px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit;background:#fff}
+  .search input:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
+  .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+  .seg button{font-family:inherit;font-size:13px;font-weight:500;border:none;background:#fff;color:var(--grey);padding:9px 14px;cursor:pointer;border-right:1px solid var(--line);transition:all .12s}
+  .seg button:last-child{border-right:none}
+  .seg button.on{background:var(--red);color:#fff}
+  .seg button:hover:not(.on){background:var(--grey-soft)}
+
+  /* DRAWER */
+  #drawer{position:fixed;inset:0;z-index:40;display:none}
+  #drawer .scrim{position:absolute;inset:0;background:rgba(31,31,34,.34);backdrop-filter:blur(1px)}
+  #drawer .sheet{position:absolute;top:0;right:0;bottom:0;width:480px;background:var(--paper);box-shadow:-12px 0 40px rgba(31,31,34,.2);display:flex;flex-direction:column;animation:slide .25s ease}
+  @keyframes slide{from{transform:translateX(40px);opacity:.6}to{transform:none;opacity:1}}
+  .dr-head{padding:20px 22px;background:#fff;border-bottom:1px solid var(--line)}
+  .dr-head .top{display:flex;justify-content:space-between;align-items:flex-start}
+  .dr-head .who{display:flex;align-items:center;gap:12px}
+  .dr-head .avatar{width:42px;height:42px;font-size:15px}
+  .dr-head .nm{font-size:16px;font-weight:600}
+  .dr-head .ag{font-size:12.5px;color:var(--grey-2)}
+  .close-x{background:none;border:none;cursor:pointer;color:var(--grey-2);font-size:22px;line-height:1;padding:2px 6px;border-radius:6px}
+  .close-x:hover{background:var(--grey-soft);color:var(--ink)}
+  .dr-stats{display:flex;gap:10px;margin-top:16px}
+  .dr-stat{flex:1;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 11px}
+  .dr-stat .l{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--grey-2);font-weight:600}
+  .dr-stat .v{font-size:15px;font-weight:600;margin-top:3px}
+  .dr-body{flex:1;overflow-y:auto;padding:20px 22px}
+  .dr-sec-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--grey-2);font-weight:600;margin:4px 0 12px}
+  .flag-card{background:var(--red-soft);border:1px solid var(--red-mid);border-radius:9px;padding:13px 14px;margin-bottom:18px;display:flex;gap:11px}
+  .flag-card .fic{flex-shrink:0;margin-top:1px;color:var(--red)}
+  .flag-card .fic svg{width:18px;height:18px}
+  .flag-card .ft{font-size:13px;font-weight:600;margin-bottom:3px}
+  .flag-card .fd{font-size:12.5px;color:var(--ink);line-height:1.5;opacity:.85}
+  .dr-actions{display:flex;gap:9px;margin-bottom:20px}
+  .dr-actions button{flex:1;font-family:inherit;font-size:12.5px;font-weight:600;padding:9px;border-radius:8px;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--grey-dark);transition:all .12s}
+  .dr-actions button:hover{background:var(--grey-soft)}
+  .dr-actions button.primary{background:var(--red);color:#fff;border-color:var(--red)}
+  .dr-actions button.primary:hover{background:var(--red-dark)}
+  .bubble{margin-bottom:13px;max-width:86%}
+  .bubble .role{font-size:11px;color:var(--grey-2);margin-bottom:4px;font-weight:600}
+  .bubble .txt{padding:10px 13px;border-radius:12px;font-size:13.5px;line-height:1.5}
+  .bubble.ai{margin-right:auto}
+  .bubble.ai .txt{background:#fff;border:1px solid var(--line);border-bottom-left-radius:3px}
+  .bubble.user{margin-left:auto}
+  .bubble.user .role{text-align:right}
+  .bubble.user .txt{background:var(--grey-dark);color:#fff;border-bottom-right-radius:3px}
+  .bubble .flagword{background:var(--red-mid);padding:1px 3px;border-radius:3px}
+  .empty{padding:40px 20px;text-align:center;color:var(--grey-2);font-size:13px}
+
+  /* COST / IMPACT VIEW */
+  .bar-row{display:flex;align-items:center;gap:14px;padding:14px 0}
+  .bar-row .lbl{width:180px;font-size:13px;color:var(--grey-dark);font-weight:500}
+  .bar-track{flex:1;height:30px;background:var(--grey-soft);border-radius:6px;overflow:hidden;position:relative}
+  .bar-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding:0 11px;color:#fff;font-size:12.5px;font-weight:600}
+  .bar-fill.red{background:var(--red)}
+  .bar-fill.grey{background:var(--grey-2)}
+  .impact-note{font-size:12.5px;color:var(--grey);line-height:1.6;padding:14px 18px;background:var(--paper);border-top:1px solid var(--line)}
+
+  /* SETTINGS */
+  .set-row{display:flex;justify-content:space-between;align-items:center;padding:15px 18px;border-bottom:1px solid var(--line-2)}
+  .set-row:last-child{border-bottom:none}
+  .set-row .si{font-size:13.5px;font-weight:600}
+  .set-row .sd{font-size:12.5px;color:var(--grey);margin-top:2px}
+  .toggle{width:42px;height:24px;border-radius:20px;background:var(--grey-3);position:relative;cursor:pointer;transition:background .15s;flex-shrink:0}
+  .toggle.on{background:var(--red)}
+  .toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s}
+  .toggle.on::after{left:21px}
+
+  /* incoming call toast */
+  #toast{position:fixed;bottom:24px;right:24px;z-index:60;background:var(--grey-dark);color:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 16px 48px rgba(31,31,34,.4);display:none;align-items:center;gap:14px;min-width:300px;animation:slide .3s ease}
+  #toast .ring{width:40px;height:40px;border-radius:10px;background:var(--red);display:grid;place-items:center;animation:pulse 1.2s infinite}
+  #toast .ring svg{width:20px;height:20px}
+  #toast .ti{font-size:14px;font-weight:600}
+  #toast .ts{font-size:12px;color:#c9c9cd;margin-top:2px}
+
+  @media(max-width:1080px){.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.login-left{display:none}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="login-left">
+    <div class="brand"><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 5 6.5 5 9 5 12 8 12 8s3-3 5.5-3C21 5 23.5 8.5 21.5 12.5 19 16.65 12 21 12 21z"/></svg></span>CareCall</div>
+    <div class="login-tag">
+      <h1>Welfare you can hear before it becomes a crisis.</h1>
+      <p>Daily voice check-ins for residents living alone. Natural conversation, automatic wellbeing signals, and human escalation the moment something changes.</p>
+    </div>
+    <div class="login-foot">
+      <strong>Hosted in the EU · Processed on sovereign infrastructure</strong><br>
+      GDPR-compliant by design. Data never leaves national borders.
+    </div>
+  </div>
+  <div class="login-right">
+    <div class="login-card">
+      <h2>Sign in</h2>
+      <div class="sub">Municipal welfare monitoring console</div>
+      <div class="field"><label>Work email</label><input id="email" type="email" placeholder="name@kaupunki.fi" value="demo@carecall.fi"></div>
+      <div class="field"><label>Password</label><input id="pass" type="password" placeholder="••••••••" value="demo"></div>
+      <button class="btn" onclick="doLogin()">Sign in to console</button>
+      <div class="err" id="loginErr">Incorrect credentials. Use the demo login below.</div>
+      <div class="hint">Demo access — email <code>demo@carecall.fi</code> · password <code>demo</code></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand"><span class="dot" style="width:30px;height:30px"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 5 6.5 5 9 5 12 8 12 8s3-3 5.5-3C21 5 23.5 8.5 21.5 12.5 19 16.65 12 21 12 21z"/></svg></span>CareCall</div>
+      <nav class="nav">
+        <div class="nav-label">Monitoring</div>
+        <a data-view="overview" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Overview</a>
+        <a data-view="residents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>Residents</a>
+        <a data-view="calls"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Call log</a>
+        <a data-view="alerts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Alerts <span id="alertCount" style="margin-left:auto;background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:10px">5</span></a>
+        <div class="nav-label">Reporting</div>
+        <a data-view="cost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Cost &amp; impact</a>
+        <a data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</a>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="who">Turun kaupunki</div>
+        Home Care · West district<br>Signed in as demo
+        <div class="logout" onclick="doLogout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign out</div>
+      </div>
+    </aside>
+
+    <div class="main">
+      <div class="topbar">
+        <h1 id="pageTitle">Welfare overview</h1>
+        <div class="right">
+          <button class="sim-btn" onclick="simulateCall()">▸ Simulate incoming call</button>
+          <div class="live-pill"><span class="pulse"></span>Live — 3 calls active</div>
+        </div>
+      </div>
+
+      <div class="content">
+
+        <!-- OVERVIEW -->
+        <div class="view active" id="view-overview">
+          <div class="kpis">
+            <div class="kpi">
+              <div class="k-top"><span class="k-label">Residents monitored</span><span class="k-ic ic-grey"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span></div>
+              <div class="k-val">142</div>
+              <div class="k-sub"><span class="up">▲ 6</span> onboarded this week</div>
+            </div>
+            <div class="kpi">
+              <div class="k-top"><span class="k-label">Check-ins completed today</span><span class="k-ic ic-grey"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></span></div>
+              <div class="k-val">128<small> / 142</small></div>
+              <div class="k-sub"><span class="up">90.1%</span> reached &nbsp;·&nbsp; 14 pending</div>
+            </div>
+            <div class="kpi">
+              <div class="k-top"><span class="k-label">Open wellbeing alerts</span><span class="k-ic ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span></div>
+              <div class="k-val">5</div>
+              <div class="k-sub"><span class="down">1 urgent</span> · avg response 3m 41s</div>
+            </div>
+            <div class="kpi">
+              <div class="k-top"><span class="k-label">Est. monthly cost saving</span><span class="k-ic ic-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span></div>
+              <div class="k-val">€41.2k</div>
+              <div class="k-sub">vs. in-person welfare visits</div>
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="panel" style="margin-bottom:0">
+              <div class="panel-h"><h3>Residents needing attention</h3><span class="meta">Click a resident to open file</span></div>
+              <div class="panel-b"><table><thead><tr><th>Resident</th><th>Last check-in</th><th>Wellbeing trend</th><th>Status</th></tr></thead><tbody id="resTableMini"></tbody></table></div>
+            </div>
+            <div class="panel" style="margin-bottom:0">
+              <div class="panel-h"><h3>Recent alerts</h3><span class="meta">Auto-detected</span></div>
+              <div class="panel-b" id="alertListMini"></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-h"><h3>Today's call log</h3><span class="meta" id="callMetaMini"></span></div>
+            <div class="panel-b" id="callLogMini"></div>
+          </div>
+        </div>
+
+        <!-- RESIDENTS -->
+        <div class="view" id="view-residents">
+          <div class="toolbar">
+            <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="resSearch" placeholder="Search residents by name or district…" oninput="renderResidentsFull()"></div>
+            <div class="seg" id="resFilter">
+              <button class="on" data-f="all" onclick="setResFilter('all')">All</button>
+              <button data-f="alert" onclick="setResFilter('alert')">Action needed</button>
+              <button data-f="watch" onclick="setResFilter('watch')">Watch</button>
+              <button data-f="ok" onclick="setResFilter('ok')">Stable</button>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h3>All residents</h3><span class="meta" id="resCountMeta"></span></div>
+            <div class="panel-b"><table><thead><tr><th>Resident</th><th>District</th><th>Last check-in</th><th>Wellbeing trend</th><th>Status</th></tr></thead><tbody id="resTableFull"></tbody></table></div>
+          </div>
+        </div>
+
+        <!-- CALL LOG -->
+        <div class="view" id="view-calls">
+          <div class="toolbar">
+            <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="callSearch" placeholder="Search calls by resident…" oninput="renderCallsFull()"></div>
+            <div class="seg" id="callFilter">
+              <button class="on" data-f="all" onclick="setCallFilter('all')">All</button>
+              <button data-f="out" onclick="setCallFilter('out')">Outbound</button>
+              <button data-f="in" onclick="setCallFilter('in')">Inbound</button>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h3>Call log</h3><span class="meta" id="callCountMeta"></span></div>
+            <div class="panel-b" id="callLogFull"></div>
+          </div>
+        </div>
+
+        <!-- ALERTS -->
+        <div class="view" id="view-alerts">
+          <div class="toolbar">
+            <div class="seg" id="alertFilter">
+              <button class="on" data-f="all" onclick="setAlertFilter('all')">All alerts</button>
+              <button data-f="red" onclick="setAlertFilter('red')">Urgent</button>
+              <button data-f="amber" onclick="setAlertFilter('amber')">Watch</button>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h3>Wellbeing alerts</h3><span class="meta" id="alertCountMeta"></span></div>
+            <div class="panel-b" id="alertListFull"></div>
+          </div>
+        </div>
+
+        <!-- COST & IMPACT -->
+        <div class="view" id="view-cost">
+          <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+            <div class="kpi"><div class="k-top"><span class="k-label">Cost per welfare check</span></div><div class="k-val" style="color:var(--red)">€3.10</div><div class="k-sub">automated voice check-in</div></div>
+            <div class="kpi"><div class="k-top"><span class="k-label">Cost per in-person visit</span></div><div class="k-val">€48.00</div><div class="k-sub">incl. travel &amp; staff time</div></div>
+            <div class="kpi"><div class="k-top"><span class="k-label">Monthly saving (142 residents)</span></div><div class="k-val" style="color:var(--red)">€41.2k</div><div class="k-sub">daily check portion only</div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h3>Cost per daily welfare check</h3><span class="meta">Illustrative — replace with municipal figures</span></div>
+            <div class="panel-b pad">
+              <div class="bar-row"><div class="lbl">In-person home visit</div><div class="bar-track"><div class="bar-fill grey" style="width:100%">€48.00</div></div></div>
+              <div class="bar-row"><div class="lbl">CareCall voice check-in</div><div class="bar-track"><div class="bar-fill red" style="width:6.5%;min-width:54px">€3.10</div></div></div>
+            </div>
+            <div class="impact-note"><strong>How to read this:</strong> CareCall does not replace home visits — it replaces the <em>daily welfare check</em> portion for stable residents, freeing care staff to spend their visiting hours on people flagged as needing real attention. Figures shown are illustrative placeholders and must be validated against Turku home-care cost data before any procurement claim.</div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h3>Outcomes this month</h3></div>
+            <div class="panel-b pad">
+              <div class="bar-row"><div class="lbl">Daily checks delivered</div><div class="bar-track"><div class="bar-fill grey" style="width:94%">3,961 of 4,210</div></div></div>
+              <div class="bar-row"><div class="lbl">Issues caught early</div><div class="bar-track"><div class="bar-fill red" style="width:38%">37 escalations</div></div></div>
+              <div class="bar-row"><div class="lbl">Avg. response to urgent flag</div><div class="bar-track"><div class="bar-fill grey" style="width:22%">3m 41s</div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div class="view" id="view-settings">
+          <div class="panel">
+            <div class="panel-h"><h3>Call programme</h3></div>
+            <div class="panel-b">
+              <div class="set-row"><div><div class="si">Daily outbound check-ins</div><div class="sd">Automatically call each monitored resident once per day</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="set-row"><div><div class="si">Medication reminders</div><div class="sd">Voice prompt at each resident's scheduled dose time</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="set-row"><div><div class="si">Auto-retry on no answer</div><div class="sd">Retry twice, then escalate to the on-call team</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="set-row"><div><div class="si">Weekend calls</div><div class="sd">Run the check-in programme on Saturdays and Sundays</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h3>Escalation &amp; safety</h3></div>
+            <div class="panel-b">
+              <div class="set-row"><div><div class="si">Human escalation on distress</div><div class="sd">Route to on-call nurse the moment risk is detected — cannot be disabled</div></div><div class="toggle on" style="opacity:.6;cursor:not-allowed"></div></div>
+              <div class="set-row"><div><div class="si">Family notifications</div><div class="sd">Notify the registered next of kin on red-level flags</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="set-row"><div><div class="si">Resident consent required</div><div class="sd">No monitoring begins until consent is recorded — cannot be disabled</div></div><div class="toggle on" style="opacity:.6;cursor:not-allowed"></div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h3>Data &amp; residency</h3></div>
+            <div class="panel-b">
+              <div class="set-row"><div><div class="si">EU data residency</div><div class="sd">All voice data processed and stored within national borders</div></div><div class="toggle on" style="opacity:.6;cursor:not-allowed"></div></div>
+              <div class="set-row"><div><div class="si">Call recording retention</div><div class="sd">Transcripts kept 90 days, then anonymised</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DRAWER -->
+<div id="drawer">
+  <div class="scrim" onclick="closeDrawer()"></div>
+  <div class="sheet">
+    <div class="dr-head" id="drHead"></div>
+    <div class="dr-body" id="drBody"></div>
+  </div>
+</div>
+
+<!-- INCOMING CALL TOAST -->
+<div id="toast">
+  <div class="ring"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+  <div><div class="ti" id="toastTitle">Incoming call</div><div class="ts" id="toastSub">Connecting…</div></div>
+</div>
+
+<script>
+/* ------------------------------------------------------------------ *
+ *  DATA MODEL — your backend fills this from call webhooks in
+ *  production. Dashboard only reads from here, so it never goes blank.
+ * ------------------------------------------------------------------ */
+const residents = [
+  { id:'r1', name:'Aino Virtanen', age:84, district:'Nummi', status:'alert', trend:[4,4,3,3,2,2,1], last:'Today 09:12', dir:'out', dur:'4m 18s',
+    flag:{level:'red', title:'Possible fall / mobility change', detail:'Resident mentioned falling in the bathroom yesterday and feeling unsteady. No injury reported but a follow-up visit is recommended within 24h.'},
+    transcript:[
+      {r:'ai', t:'Good morning, Aino. It\'s your CareCall check-in. How are you feeling today?'},
+      {r:'user', t:'Oh, morning. I\'m alright I suppose. A bit shaken though.'},
+      {r:'ai', t:'I\'m sorry to hear that. What happened?'},
+      {r:'user', t:'I had a little fall in the bathroom yesterday evening. I didn\'t hurt myself badly but I\'ve been unsteady on my feet since.', flag:['fall','unsteady']},
+      {r:'ai', t:'Thank you for telling me, that\'s important. Are you in any pain right now, and were you able to get up by yourself?'},
+      {r:'user', t:'I managed to get up, slowly. My hip is a bit sore but nothing broken I think.'},
+      {r:'ai', t:'I understand. I\'m going to let your care team know so someone can check in on you today. Is there anything you need in the meantime?'},
+      {r:'user', t:'No, that\'s kind of you. Maybe just someone to talk to.'},
+      {r:'ai', t:'I\'m here. Let\'s have a proper chat — and your nurse will be in touch shortly.'}
+    ]},
+  { id:'r2', name:'Eero Lahtinen', age:79, district:'Port Arthur', status:'watch', trend:[5,5,4,4,4,3,3], last:'Today 08:47', dir:'out', dur:'3m 02s',
+    flag:{level:'amber', title:'Low mood — third day', detail:'Sentiment trending down over the last three check-ins. Resident expressed loneliness and reduced appetite. Suggest social prescribing referral.'},
+    transcript:[
+      {r:'ai', t:'Hello Eero, good morning. How did you sleep?'},
+      {r:'user', t:'Not great. I don\'t see much point getting up early these days.', flag:['point getting up']},
+      {r:'ai', t:'That sounds heavy. Has something been on your mind?'},
+      {r:'user', t:'It\'s quiet here since my wife passed. The days are long.', flag:['quiet','days are long']},
+      {r:'ai', t:'I\'m really sorry, Eero. That kind of quiet is hard. Have you been eating okay?'},
+      {r:'user', t:'Not much of an appetite, to be honest.', flag:['appetite']},
+      {r:'ai', t:'Thank you for being honest with me. There\'s a community lunch group on Thursdays nearby — would you like me to ask someone to tell you more about it?'},
+      {r:'user', t:'Maybe. That might be nice.'}
+    ]},
+  { id:'r3', name:'Marja Koskinen', age:88, district:'Nummi', status:'watch', trend:[4,3,4,3,3,3,2], last:'Today 09:40', dir:'out', dur:'5m 33s',
+    flag:{level:'amber', title:'Possible memory concern', detail:'Resident repeated the same question three times and was uncertain about the day. Recommend cognitive screening at next nurse visit.'},
+    transcript:[
+      {r:'ai', t:'Good morning Marja, it\'s your daily call. How are you?'},
+      {r:'user', t:'Hello dear. What day is it today?'},
+      {r:'ai', t:'It\'s Friday today, Marja.'},
+      {r:'user', t:'Friday already. And have I taken my pills? What day is it?', flag:['what day','pills']},
+      {r:'ai', t:'It\'s Friday. Your morning medication reminder went off at eight — did you manage to take them?'},
+      {r:'user', t:'I think so. Remind me, what day is it now?', flag:['what day']},
+      {r:'ai', t:'Still Friday. I\'ll note that you might like a little extra support remembering, and let your nurse know. No rush at all.'}
+    ]},
+  { id:'r4', name:'Tapio Niemi', age:81, district:'Hirvensalo', status:'ok', trend:[4,4,4,5,4,5,5], last:'Today 08:30', dir:'in', dur:'2m 15s', flag:null,
+    transcript:[
+      {r:'ai', t:'CareCall, good morning Tapio.'},
+      {r:'user', t:'Morning! Just calling to say I\'ll be at my daughter\'s this weekend, so no need to ring me Saturday.'},
+      {r:'ai', t:'Wonderful, thank you for letting me know. I\'ll pause Saturday\'s call. Have a lovely time.'},
+      {r:'user', t:'Will do. Feeling good this week, the new walking route helps.'},
+      {r:'ai', t:'That\'s great to hear. Enjoy the weekend, Tapio.'}
+    ]},
+  { id:'r5', name:'Liisa Mäkinen', age:86, district:'Port Arthur', status:'ok', trend:[5,5,5,4,5,5,5], last:'Today 09:05', dir:'out', dur:'3m 48s', flag:null,
+    transcript:[
+      {r:'ai', t:'Good morning Liisa, how are you feeling today?'},
+      {r:'user', t:'Very well thank you, the sun is out for once!'},
+      {r:'ai', t:'It is lovely. Did you sleep well?'},
+      {r:'user', t:'Like a log. And I\'ve already had my porridge and my pills.'},
+      {r:'ai', t:'Perfect. You\'re doing everything right. Anything you need today?'},
+      {r:'user', t:'No, all good here. Thank you for checking, it\'s nice to hear a voice.'}
+    ]},
+  { id:'r6', name:'Veikko Salo', age:90, district:'Hirvensalo', status:'watch', trend:[4,4,3,4,3,3,3], last:'Yesterday 09:20', dir:'out', dur:'No answer',
+    flag:{level:'amber', title:'Missed check-in (2 attempts)', detail:'Did not answer two scheduled calls. Auto-retry queued for 14:00, then escalation to on-call team.'},
+    transcript:[
+      {r:'ai', t:'Good morning Veikko, this is your CareCall check-in. (No answer — voicemail left.)'}
+    ]},
+  { id:'r7', name:'Helena Aho', age:83, district:'Nummi', status:'ok', trend:[5,4,5,5,4,5,4], last:'Today 08:55', dir:'out', dur:'2m 40s', flag:null,
+    transcript:[
+      {r:'ai', t:'Morning Helena, your daily check-in. How are you today?'},
+      {r:'user', t:'Fine thank you, just a bit of a busy morning.'},
+      {r:'ai', t:'Did you manage your morning medication?'},
+      {r:'user', t:'Oh — not yet, I forgot with all the fuss.'},
+      {r:'ai', t:'No problem at all. I\'ll send you a gentle reminder in twenty minutes. Take care, Helena.'}
+    ]},
+  { id:'r8', name:'Pentti Korhonen', age:78, district:'Port Arthur', status:'ok', trend:[5,5,5,5,5,4,5], last:'Today 09:30', dir:'out', dur:'3m 11s', flag:null,
+    transcript:[
+      {r:'ai', t:'Good morning Pentti, how are things?'},
+      {r:'user', t:'Can\'t complain! Off to the library shortly.'},
+      {r:'ai', t:'Lovely. Everything alright with sleep and meals?'},
+      {r:'user', t:'All good. Pills taken, breakfast done.'},
+      {r:'ai', t:'Perfect, enjoy the library. Talk tomorrow.'}
+    ]}
+];
+
+const alerts = [
+  { resId:'r1', level:'red', title:'Aino Virtanen — fall reported', desc:'Mentioned a bathroom fall and unsteadiness. Routed to on-call nurse.', when:'9 min ago' },
+  { resId:'r2', level:'amber', title:'Eero Lahtinen — low mood (day 3)', desc:'Declining sentiment + reduced appetite. Social referral suggested.', when:'1 h ago' },
+  { resId:'r3', level:'amber', title:'Marja Koskinen — memory concern', desc:'Repeated questions, day disorientation. Flagged for screening.', when:'2 h ago' },
+  { resId:'r6', level:'amber', title:'Veikko Salo — no answer (2 attempts)', desc:'Missed scheduled check-in twice. Auto-retry at 14:00, then escalate.', when:'3 h ago' },
+  { resId:'r7', level:'amber', title:'Helena Aho — medication not confirmed', desc:'Did not confirm morning dose during call. Reminder re-sent.', when:'4 h ago' }
+];
+
+const callLog = [
+  { resId:'r3', dir:'out', sub:'Outbound check-in · flagged', dur:'5m 33s', time:'09:40' },
+  { resId:'r8', dir:'out', sub:'Outbound check-in · normal', dur:'3m 11s', time:'09:30' },
+  { resId:'r1', dir:'out', sub:'Outbound check-in · escalated', dur:'4m 18s', time:'09:12' },
+  { resId:'r5', dir:'out', sub:'Outbound check-in · normal', dur:'3m 48s', time:'09:05' },
+  { resId:'r7', dir:'out', sub:'Outbound check-in · normal', dur:'2m 40s', time:'08:55' },
+  { resId:'r2', dir:'out', sub:'Outbound check-in · flagged', dur:'3m 02s', time:'08:47' },
+  { resId:'r4', dir:'in',  sub:'Inbound · schedule change', dur:'2m 15s', time:'08:30' },
+  { resId:'r5', dir:'out', sub:'Outbound check-in · normal', dur:'4m 02s', time:'08:11' }
+];
+
+/* ---------- AUTH ---------- */
+function doLogin(){
+  const e=document.getElementById('email').value.trim().toLowerCase();
+  const p=document.getElementById('pass').value;
+  if(e==='demo@carecall.fi' && p==='demo'){
+    document.getElementById('login').style.display='none';
+    document.getElementById('app').style.display='block';
+    renderAll();
+  } else {
+    document.getElementById('loginErr').style.display='block';
+  }
+}
+function doLogout(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('login').style.display='flex';
+  document.getElementById('pass').value='demo';
+  closeDrawer();
+}
+document.getElementById('pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+/* ---------- NAV / ROUTING ---------- */
+const titles={overview:'Welfare overview',residents:'Residents',calls:'Call log',alerts:'Wellbeing alerts',cost:'Cost & impact',settings:'Settings'};
+document.querySelectorAll('.nav a').forEach(a=>{
+  a.addEventListener('click',()=>{
+    const v=a.getAttribute('data-view');
+    document.querySelectorAll('.nav a').forEach(x=>x.classList.remove('active'));
+    a.classList.add('active');
+    document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+    document.getElementById('view-'+v).classList.add('active');
+    document.getElementById('pageTitle').textContent=titles[v];
+    closeDrawer();
+  });
+});
+
+/* ---------- HELPERS ---------- */
+const byId = id => residents.find(r=>r.id===id);
+const initials = n => n.split(' ').map(w=>w[0]).join('').slice(0,2);
+const statusBadge = s => ({
+  ok:'<span class="badge b-ok"><span class="b-dot"></span>Stable</span>',
+  watch:'<span class="badge b-watch"><span class="b-dot"></span>Watch</span>',
+  alert:'<span class="badge b-alert"><span class="b-dot"></span>Action needed</span>'
+}[s]);
+function sparkline(data){
+  const w=84,h=24,max=5,min=1,step=w/(data.length-1);
+  const pts=data.map((v,i)=>`${(i*step).toFixed(1)},${(h-((v-min)/(max-min))*h).toFixed(1)}`).join(' ');
+  const down=data[data.length-1]<data[0];
+  const col=down?'var(--red)':'var(--grey-2)';
+  return `<svg width="${w}" height="${h}" style="vertical-align:middle"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+function dirIcon(isIn){
+  return isIn
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 17 17 17 17 7"/><line x1="7" y1="7" x2="17" y2="17"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 7 7 7 7 17"/><line x1="17" y1="17" x2="7" y2="7"/></svg>';
+}
+function alertRowHTML(a){
+  return `<div class="alert-item" onclick="${a.resId?`openResident('${a.resId}')`:''}">
+    <div class="alert-ic" style="background:${a.level==='red'?'var(--red)':'var(--red-soft)'};color:${a.level==='red'?'#fff':'var(--red)'}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <div class="alert-meta"><div class="t">${a.title}</div><div class="d">${a.desc}</div><div class="when">${a.when}</div></div>
+  </div>`;
+}
+function callRowHTML(c){
+  const r=byId(c.resId), isIn=c.dir==='in';
+  return `<div class="call-row" onclick="openResident('${c.resId}')">
+    <div class="dir ${isIn?'dir-in':'dir-out'}">${dirIcon(isIn)}</div>
+    <div class="call-main"><div class="nm">${r?r.name:'Unknown'}</div><div class="sub">${c.sub}</div></div>
+    <div class="call-dur">${c.dur}</div>
+    <div class="call-time">${c.time}</div>
+  </div>`;
+}
+
+/* ---------- RENDER: OVERVIEW ---------- */
+function renderOverview(){
+  const order={alert:0,watch:1,ok:2};
+  const sorted=[...residents].sort((a,b)=>order[a.status]-order[b.status]).slice(0,5);
+  document.getElementById('resTableMini').innerHTML=sorted.map(r=>`
+    <tr class="row" onclick="openResident('${r.id}')">
+      <td><div class="person"><div class="avatar">${initials(r.name)}</div><div><div class="nm">${r.name}</div><div class="ag">${r.age} · ${r.district}</div></div></div></td>
+      <td><span style="color:var(--grey)">${r.last}</span></td>
+      <td>${sparkline(r.trend)}</td>
+      <td>${statusBadge(r.status)}</td>
+    </tr>`).join('');
+  document.getElementById('alertListMini').innerHTML=alerts.slice(0,5).map(alertRowHTML).join('');
+  document.getElementById('callMetaMini').textContent=`${callLog.length} calls · avg 3m 49s`;
+  document.getElementById('callLogMini').innerHTML=callLog.slice(0,6).map(callRowHTML).join('');
+}
+
+/* ---------- RENDER: RESIDENTS (full, searchable, filterable) ---------- */
+let resFilter='all';
+function setResFilter(f){resFilter=f;document.querySelectorAll('#resFilter button').forEach(b=>b.classList.toggle('on',b.dataset.f===f));renderResidentsFull();}
+function renderResidentsFull(){
+  const q=(document.getElementById('resSearch').value||'').toLowerCase();
+  let list=residents.filter(r=>resFilter==='all'||r.status===resFilter);
+  if(q) list=list.filter(r=>r.name.toLowerCase().includes(q)||r.district.toLowerCase().includes(q));
+  const order={alert:0,watch:1,ok:2};
+  list.sort((a,b)=>order[a.status]-order[b.status]);
+  document.getElementById('resCountMeta').textContent=`${list.length} of ${residents.length}`;
+  document.getElementById('resTableFull').innerHTML = list.length?list.map(r=>`
+    <tr class="row" onclick="openResident('${r.id}')">
+      <td><div class="person"><div class="avatar">${initials(r.name)}</div><div><div class="nm">${r.name}</div><div class="ag">${r.age} years</div></div></div></td>
+      <td><span style="color:var(--grey)">${r.district}</span></td>
+      <td><span style="color:var(--grey)">${r.last}</span></td>
+      <td>${sparkline(r.trend)}</td>
+      <td>${statusBadge(r.status)}</td>
+    </tr>`).join('') : `<tr><td colspan="5"><div class="empty">No residents match your search.</div></td></tr>`;
+}
+
+/* ---------- RENDER: CALLS (full) ---------- */
+let callFilter='all';
+function setCallFilter(f){callFilter=f;document.querySelectorAll('#callFilter button').forEach(b=>b.classList.toggle('on',b.dataset.f===f));renderCallsFull();}
+function renderCallsFull(){
+  const q=(document.getElementById('callSearch').value||'').toLowerCase();
+  let list=callLog.filter(c=>callFilter==='all'||c.dir===callFilter);
+  if(q) list=list.filter(c=>{const r=byId(c.resId);return r&&r.name.toLowerCase().includes(q);});
+  document.getElementById('callCountMeta').textContent=`${list.length} calls`;
+  document.getElementById('callLogFull').innerHTML = list.length?list.map(callRowHTML).join('') : `<div class="empty">No calls match your search.</div>`;
+}
+
+/* ---------- RENDER: ALERTS (full) ---------- */
+let alertFilter='all';
+function setAlertFilter(f){alertFilter=f;document.querySelectorAll('#alertFilter button').forEach(b=>b.classList.toggle('on',b.dataset.f===f));renderAlertsFull();}
+function renderAlertsFull(){
+  let list=alerts.filter(a=>alertFilter==='all'||a.level===alertFilter);
+  document.getElementById('alertCountMeta').textContent=`${list.length} alert${list.length===1?'':'s'}`;
+  document.getElementById('alertListFull').innerHTML = list.length?list.map(alertRowHTML).join('') : `<div class="empty">No alerts in this category.</div>`;
+}
+
+/* ---------- DRAWER ---------- */
+function openResident(id){
+  const r=byId(id); if(!r) return;
+  const down=r.trend[r.trend.length-1]<r.trend[0];
+  document.getElementById('drHead').innerHTML=`
+    <div class="top">
+      <div class="who"><div class="avatar">${initials(r.name)}</div><div><div class="nm">${r.name}</div><div class="ag">${r.age} years · ${r.district} district</div></div></div>
+      <button class="close-x" onclick="closeDrawer()">×</button>
+    </div>
+    <div class="dr-stats">
+      <div class="dr-stat"><div class="l">Last call</div><div class="v">${r.last.replace('Today ','')}</div></div>
+      <div class="dr-stat"><div class="l">Duration</div><div class="v">${r.dur}</div></div>
+      <div class="dr-stat"><div class="l">Wellbeing</div><div class="v" style="color:${down?'var(--red)':'var(--grey-dark)'}">${down?'Declining':'Stable'}</div></div>
+    </div>`;
+  let html='';
+  if(r.flag){
+    html+=`<div class="flag-card">
+      <span class="fic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+      <div><div class="ft">${r.flag.title}</div><div class="fd">${r.flag.detail}</div></div>
+    </div>`;
+  }
+  html+=`<div class="dr-actions">
+    <button class="primary" onclick="drawerAction('escalate','${r.id}')">Escalate to nurse</button>
+    <button onclick="drawerAction('call','${r.id}')">Call now</button>
+    <button onclick="drawerAction('resolve','${r.id}')">Mark reviewed</button>
+  </div>`;
+  html+=`<div class="dr-sec-label">Call transcript</div>`;
+  html+=r.transcript.map(m=>{
+    let t=m.t;
+    if(m.flag){m.flag.forEach(f=>{t=t.replace(f,`<span class="flagword">${f}</span>`);});}
+    return `<div class="bubble ${m.r}"><div class="role">${m.r==='ai'?'CareCall':r.name.split(' ')[0]}</div><div class="txt">${t}</div></div>`;
+  }).join('');
+  document.getElementById('drBody').innerHTML=html;
+  document.getElementById('drawer').style.display='block';
+}
+function closeDrawer(){document.getElementById('drawer').style.display='none';}
+function drawerAction(kind,id){
+  const r=byId(id); if(!r)return;
+  const msgs={escalate:`Escalated ${r.name} to the on-call nurse.`,call:`Placing a call to ${r.name}…`,resolve:`${r.name} marked as reviewed.`};
+  showToast(kind==='call'?'Calling…':'Done', msgs[kind]);
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
+
+/* ---------- TOAST + LIVE CALL SIM ---------- */
+function showToast(title,sub,ms=3500){
+  const t=document.getElementById('toast');
+  document.getElementById('toastTitle').textContent=title;
+  document.getElementById('toastSub').textContent=sub;
+  t.style.display='flex';
+  clearTimeout(t._h); t._h=setTimeout(()=>{t.style.display='none';},ms);
+}
+function simulateCall(){
+  const t=document.getElementById('toast'); t.style.display='flex';
+  document.getElementById('toastTitle').textContent='Incoming call — Aino Virtanen';
+  document.getElementById('toastSub').textContent='Connecting to CareCall agent…';
+  setTimeout(()=>{document.getElementById('toastSub').textContent='In conversation · analysing wellbeing…';},1800);
+  setTimeout(()=>{
+    callLog.unshift({resId:'r1',dir:'in',sub:'Inbound · live now',dur:'0m 51s',time:'now'});
+    renderOverview(); renderCallsFull();
+    document.getElementById('toastTitle').textContent='Call complete — wellbeing logged';
+    document.getElementById('toastSub').textContent='No new flags · file updated';
+  },4200);
+  setTimeout(()=>{t.style.display='none';},7500);
+}
+
+/* ---------- INIT ---------- */
+function renderAll(){
+  renderOverview();
+  renderResidentsFull();
+  renderCallsFull();
+  renderAlertsFull();
+}
+</script>
+</body>
+</html>
