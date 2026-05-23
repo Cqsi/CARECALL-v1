@@ -113,7 +113,8 @@ function extractSummary(analysis: AnyRecord, data: AnyRecord): string | null {
     asString(analysis.transcript_summary) ??
     asString(analysis.call_summary) ??
     asString(analysis.summary) ??
-    asString(data.summary)
+    asString(data.summary) ??
+    (asString(data.failure_reason) ? `Outbound call failed: ${asString(data.failure_reason)}` : null)
   );
 }
 

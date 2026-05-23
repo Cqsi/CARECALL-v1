@@ -22,7 +22,7 @@ export function createElevenLabsRouter(db: CareCallDatabase): Router {
 
       const call = normalizeElevenLabsWebhook(req.body);
       const id = await db.saveCall(config.customerName, call);
-      res.status(201).json({ ok: true, id });
+      res.status(200).json({ ok: true, id });
     } catch (error) {
       next(error);
     }
