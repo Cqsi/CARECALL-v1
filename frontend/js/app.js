@@ -1,5 +1,9 @@
 /* ---------- AUTH ---------- */
-let authToken = sessionStorage.getItem('CARECALL_AUTH_TOKEN') || '';
+let authToken = localStorage.getItem('CARECALL_AUTH_TOKEN') || '';
+const nurses = [
+  {name:'Daniel', phoneNumber:'+358409393075'}
+];
+let pendingEscalationResidentId = null;
 
 function authHeaders(){
   return authToken ? { authorization: `Bearer ${authToken}` } : {};
@@ -18,8 +22,8 @@ async function doLogin(){
     const payload=await res.json().catch(()=>({}));
     if(!res.ok) throw new Error(payload.error || 'Invalid email or password.');
     authToken=payload.token;
-    sessionStorage.setItem('CARECALL_AUTH_TOKEN', authToken);
-    sessionStorage.setItem('CARECALL_AUTH_EMAIL', e);
+    localStorage.setItem('CARECALL_AUTH_TOKEN', authToken);
+    localStorage.setItem('CARECALL_AUTH_EMAIL', e);
     document.getElementById('signedInMeta').textContent=`Signed in as ${e}`;
     document.getElementById('pass').value='';
     document.getElementById('login').style.display='none';
@@ -33,8 +37,8 @@ async function doLogin(){
 }
 function doLogout(){
   authToken='';
-  sessionStorage.removeItem('CARECALL_AUTH_TOKEN');
-  sessionStorage.removeItem('CARECALL_AUTH_EMAIL');
+  localStorage.removeItem('CARECALL_AUTH_TOKEN');
+  localStorage.removeItem('CARECALL_AUTH_EMAIL');
   document.getElementById('app').style.display='none';
   document.getElementById('login').style.display='flex';
   document.getElementById('pass').value='';
@@ -346,6 +350,10 @@ function openResident(id){
 function closeDrawer(){document.getElementById('drawer').style.display='none';}
 function drawerAction(kind,id){
   const r=byId(id); if(!r)return;
+  if(kind==='escalate'){
+    openNurseModal(r);
+    return;
+  }
   if(kind==='call'){
     openOutboundCallModal(r);
     return;
@@ -358,6 +366,58 @@ function drawerAction(kind,id){
   showToast(kind==='call'?'Calling…':'Done', msgs[kind]);
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
+
+function populateNurseSelect(){
+  document.getElementById('nurseSelect').innerHTML=nurses.map((nurse,index)=>
+    `<option value="${index}">${escapeHtml(nurse.name)} · ${escapeHtml(nurse.phoneNumber)}</option>`
+  ).join('');
+}
+
+function openNurseModal(r){
+  pendingEscalationResidentId=r.id;
+  populateNurseSelect();
+  document.getElementById('nurseModalSub').textContent=`Escalate ${r.name} to a nurse.`;
+  document.getElementById('nurseSummary').value=r.flag?.detail || r.transcript.slice(-3).map(m=>`${m.r==='ai'?'CareCall':r.name}: ${m.t}`).join('\n');
+  document.getElementById('nurseModal').style.display='block';
+}
+
+function closeNurseModal(){
+  document.getElementById('nurseModal').style.display='none';
+  pendingEscalationResidentId=null;
+}
+
+async function submitNurseEscalation(){
+  const r=byId(pendingEscalationResidentId);
+  if(!r) return;
+  const nurse=nurses[Number(document.getElementById('nurseSelect').value)] || nurses[0];
+  const summary=document.getElementById('nurseSummary').value.trim();
+  try{
+    showToast('Calling nurse', `Sending escalation to ${nurse.name}…`, 3000);
+    const res=await fetch(`${API_BASE_URL}/api/calls/escalate`, {
+      method:'POST',
+      headers:{'content-type':'application/json', ...authHeaders()},
+      body:JSON.stringify({
+        nurseName:nurse.name,
+        nursePhoneNumber:nurse.phoneNumber,
+        patientName:r.name,
+        patientPhoneNumber:r.phoneNumber || '',
+        latestCallAt:r.last,
+        summary
+      })
+    });
+    if(res.status===401){
+      doLogout();
+      throw new Error('Please sign in again.');
+    }
+    const payload=await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(payload.error || payload.message || `Backend returned ${res.status}`);
+    closeNurseModal();
+    showToast('Nurse call started', `${nurse.name} is being called with the escalation summary.`);
+  }catch(err){
+    console.error(err);
+    showToast('Escalation failed', err.message || 'Could not call the nurse.');
+  }
+}
 
 async function renameCaller(r){
   const nextName=prompt('Caller name', r.name);
@@ -449,3 +509,15 @@ function renderAll(){
   renderCallsFull();
   renderAlertsFull();
 }
+
+async function resumeSession(){
+  if(!authToken) return;
+  const email=localStorage.getItem('CARECALL_AUTH_EMAIL') || 'demo user';
+  document.getElementById('signedInMeta').textContent=`Signed in as ${email}`;
+  document.getElementById('login').style.display='none';
+  document.getElementById('app').style.display='block';
+  await refreshDashboardData();
+  renderAll();
+}
+
+resumeSession();

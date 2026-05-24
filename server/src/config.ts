@@ -45,6 +45,7 @@ export const config = {
   elevenLabsWebhookSecret: process.env.ELEVENLABS_WEBHOOK_SECRET ?? "",
   elevenLabsApiKey: process.env.ELEVENLABS_API_KEY ?? "",
   elevenLabsAgentId: process.env.ELEVENLABS_AGENT_ID ?? "",
+  elevenLabsNurseAgentId: process.env.ELEVENLABS_NURSE_AGENT_ID ?? "",
   elevenLabsAgentPhoneNumberId: process.env.ELEVENLABS_AGENT_PHONE_NUMBER_ID ?? "",
   elevenLabsOutboundProvider: process.env.ELEVENLABS_OUTBOUND_PROVIDER === "sip" ? "sip" : "twilio",
   elevenLabsUseConversationOverrides: process.env.ELEVENLABS_USE_CONVERSATION_OVERRIDES === "true",

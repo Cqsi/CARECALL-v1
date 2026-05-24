@@ -96,3 +96,19 @@ Generate a local secret with:
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 ```
+
+## Nurse escalation calls
+
+The dashboard can call a nurse through a separate ElevenLabs agent. It reuses the same ElevenLabs phone number ID, but sets a different `agent_id`.
+
+Set:
+
+```env
+ELEVENLABS_NURSE_AGENT_ID=agent_...
+```
+
+The frontend currently includes one nurse option:
+
+```text
+Daniel +358409393075
+```

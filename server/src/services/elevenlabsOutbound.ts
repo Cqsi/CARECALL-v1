@@ -3,6 +3,10 @@ import { config } from "../config.js";
 export type OutboundCallRequest = {
   toNumber: string;
   instructions: string;
+  agentId?: string;
+  firstMessage?: string;
+  callType?: string;
+  dynamicVariables?: Record<string, string>;
 };
 
 export type OutboundCallResult = {
@@ -15,7 +19,6 @@ export type OutboundCallResult = {
 function assertConfigured(): void {
   const missing = [
     ["ELEVENLABS_API_KEY", config.elevenLabsApiKey],
-    ["ELEVENLABS_AGENT_ID", config.elevenLabsAgentId],
     ["ELEVENLABS_AGENT_PHONE_NUMBER_ID", config.elevenLabsAgentPhoneNumberId]
   ].filter(([, value]) => !value);
 
@@ -36,6 +39,11 @@ function normalizePhoneNumber(value: string): string {
 export async function startElevenLabsOutboundCall(request: OutboundCallRequest): Promise<OutboundCallResult> {
   assertConfigured();
 
+  const agentId = request.agentId || config.elevenLabsAgentId;
+  if (!agentId) {
+    throw new Error("Missing ElevenLabs outbound configuration: ELEVENLABS_AGENT_ID");
+  }
+
   const toNumber = normalizePhoneNumber(request.toNumber);
   if (!/^\+[1-9]\d{7,14}$/.test(toNumber)) {
     throw new Error("Phone number must use E.164 format, for example +358401234567.");
@@ -51,14 +59,15 @@ export async function startElevenLabsOutboundCall(request: OutboundCallRequest):
     dynamic_variables: {
       customer_name: config.customerName,
       call_instructions: instructions,
-      call_type: "manual"
+      call_type: request.callType || "manual",
+      ...(request.dynamicVariables ?? {})
     }
   };
 
   if (config.elevenLabsUseConversationOverrides) {
     conversationInitiationClientData.conversation_config_override = {
       agent: {
-        first_message: `Hi ${config.customerName}, this is CareCall. I am calling for a quick check-in.`,
+        first_message: request.firstMessage || `Hi ${config.customerName}, this is CareCall. I am calling for a quick check-in.`,
         prompt: {
           prompt: [
             `You are CareCall, making a manual outbound welfare follow-up call to ${config.customerName}.`,
@@ -73,7 +82,7 @@ export async function startElevenLabsOutboundCall(request: OutboundCallRequest):
   }
 
   const body = {
-    agent_id: config.elevenLabsAgentId,
+    agent_id: agentId,
     agent_phone_number_id: config.elevenLabsAgentPhoneNumberId,
     to_number: toNumber,
     conversation_initiation_client_data: conversationInitiationClientData

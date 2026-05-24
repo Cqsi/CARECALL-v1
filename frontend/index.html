@@ -227,6 +227,34 @@
   </div>
 </div>
 
+<!-- NURSE ESCALATION MODAL -->
+<div id="nurseModal">
+  <div class="modal-scrim" onclick="closeNurseModal()"></div>
+  <div class="modal-card">
+    <div class="modal-head">
+      <div>
+        <h3>Escalate to nurse</h3>
+        <p id="nurseModalSub">Call a nurse with the current situation summary.</p>
+      </div>
+      <button class="close-x" onclick="closeNurseModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Nurse</label>
+        <select id="nurseSelect"></select>
+      </div>
+      <div class="field">
+        <label>Situation summary for nurse agent</label>
+        <textarea id="nurseSummary" rows="5" placeholder="Summarize why this call needs nurse follow-up."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button onclick="closeNurseModal()">Cancel</button>
+        <button class="primary" onclick="submitNurseEscalation()">Call nurse</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- OUTBOUND CALL MODAL -->
 <div id="callModal">
   <div class="modal-scrim" onclick="closeCallModal()"></div>

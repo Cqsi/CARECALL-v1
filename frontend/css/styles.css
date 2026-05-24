@@ -39,9 +39,9 @@
   .login-card .sub{color:var(--grey);font-size:14px;margin-bottom:28px}
   .field{margin-bottom:16px}
   .field label{display:block;font-size:12.5px;font-weight:600;color:var(--grey);margin-bottom:7px;text-transform:uppercase;letter-spacing:.04em}
-  .field input,.field textarea{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:8px;font-size:14.5px;font-family:inherit;background:#fff;transition:border .15s,box-shadow .15s}
+  .field input,.field textarea,.field select{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:8px;font-size:14.5px;font-family:inherit;background:#fff;transition:border .15s,box-shadow .15s}
   .field textarea{resize:vertical;line-height:1.45}
-  .field input:focus,.field textarea:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
+  .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
   .btn{width:100%;padding:13px;border:none;border-radius:8px;background:var(--red);color:#fff;font-family:inherit;font-size:14.5px;font-weight:600;cursor:pointer;transition:background .15s,transform .05s}
   .btn:hover{background:var(--red-dark)}
   .btn:active{transform:translateY(1px)}
@@ -221,7 +221,7 @@
   .toggle.on::after{left:21px}
 
   /* outbound call modal */
-  #callModal{position:fixed;inset:0;z-index:70;display:none}
+  #callModal,#nurseModal{position:fixed;inset:0;z-index:70;display:none}
   .modal-scrim{position:absolute;inset:0;background:rgba(31,31,34,.38);backdrop-filter:blur(1px)}
   .modal-card{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(520px,calc(100vw - 32px));background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 20px 70px rgba(31,31,34,.28);overflow:hidden}
   .modal-head{display:flex;justify-content:space-between;gap:16px;padding:18px 20px;border-bottom:1px solid var(--line)}
