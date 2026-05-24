@@ -6,7 +6,7 @@ Minimal backend for the first CareCall demo flow:
 ElevenLabs post-call webhook -> CareCall server -> database -> dashboard API
 ```
 
-The first customer is seeded as `Casimir`.
+The first customer is seeded as `Patient 1`.
 
 ## Local setup
 

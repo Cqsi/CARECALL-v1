@@ -36,7 +36,7 @@ export const config = {
   databaseProvider: readDatabaseProvider(),
   databaseUrl: process.env.DATABASE_URL ?? "file:./data/carecall.db",
   databaseSsl: process.env.DATABASE_SSL === "true",
-  customerName: process.env.CUSTOMER_NAME ?? "Casimir",
+  customerName: process.env.CUSTOMER_NAME ?? "Patient 1",
   authEmail: process.env.AUTH_EMAIL ?? "",
   authPassword: process.env.AUTH_PASSWORD ?? "",
   authSecret: process.env.AUTH_SECRET ?? "",

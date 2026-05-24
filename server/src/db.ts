@@ -41,6 +41,7 @@ export interface CareCallDatabase {
   migrate(): Promise<void>;
   close(): Promise<void>;
   getOrCreateCustomer(name: string): Promise<CustomerRow>;
+  renameCustomer(fromName: string, toName: string): Promise<void>;
   saveCall(customerName: string, call: NormalizedWebhookCall): Promise<string>;
   getDashboard(customerName: string): Promise<DashboardPayload>;
   updateCallerName(customerName: string, callerId: string, name: string): Promise<DashboardCaller>;
@@ -244,6 +245,11 @@ class SqliteCareCallDatabase implements CareCallDatabase {
     return customer;
   }
 
+  async renameCustomer(fromName: string, toName: string): Promise<void> {
+    this.database.run("UPDATE customers SET name = ? WHERE name = ?", [toName, fromName]);
+    this.persist();
+  }
+
   async saveCall(customerName: string, call: NormalizedWebhookCall): Promise<string> {
     const customer = await this.getOrCreateCustomer(customerName);
     const phoneNumber = normalizePhoneNumber(call.callerPhoneNumber);
@@ -377,6 +383,13 @@ class PostgresCareCallDatabase implements CareCallDatabase {
       [id, name]
     );
     return created.rows[0];
+  }
+
+  async renameCustomer(fromName: string, toName: string): Promise<void> {
+    await this.pool.query(
+      "UPDATE customers SET name = $1 WHERE name = $2",
+      [toName, fromName]
+    );
   }
 
   async saveCall(customerName: string, call: NormalizedWebhookCall): Promise<string> {

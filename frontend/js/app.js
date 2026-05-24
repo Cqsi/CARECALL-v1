@@ -133,7 +133,7 @@ function residentFromCaller(caller, fallbackName){
 }
 
 function applyDashboardPayload(payload){
-  const customerName=payload?.customer?.name || 'Casimir';
+  const customerName=payload?.customer?.name || 'Patient 1';
   const latest=payload?.latestCall;
   const backendCallers=payload?.callers || [];
   if(backendCallers.length){

@@ -10,7 +10,7 @@ const payload = {
     transcript: [
       {
         role: "agent",
-        message: "Hi Casimir, this is CareCall. How are you feeling today?",
+        message: "Hi Patient 1, this is CareCall. How are you feeling today?",
         time_in_call_secs: 0
       },
       {
@@ -35,7 +35,7 @@ const payload = {
       call_duration_secs: 42
     },
     analysis: {
-      transcript_summary: "Casimir sounded calm and reported no urgent wellbeing concerns.",
+      transcript_summary: "Patient 1 sounded calm and reported no urgent wellbeing concerns.",
       data_collection_results: {
         wellbeing_sentiment: { value: "stable" },
         wellbeing_score: { value: 4 }
