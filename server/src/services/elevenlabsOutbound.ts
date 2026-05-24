@@ -58,6 +58,7 @@ export async function startElevenLabsOutboundCall(request: OutboundCallRequest):
     type: "conversation_initiation_client_data",
     dynamic_variables: {
       customer_name: config.customerName,
+      target_phone_number: toNumber,
       call_instructions: instructions,
       call_type: request.callType || "manual",
       ...(request.dynamicVariables ?? {})

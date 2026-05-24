@@ -455,7 +455,7 @@ async function renameCaller(r){
 
 function openOutboundCallModal(r){
   document.getElementById('callModalSub').textContent=`Start an outbound CareCall check-in for ${r.name}.`;
-  document.getElementById('callPhone').value=r.phoneNumber || localStorage.getItem('CARECALL_TARGET_PHONE') || '';
+  document.getElementById('callPhone').value=r.phoneNumber || '';
   document.getElementById('callInstructions').value=localStorage.getItem('CARECALL_LAST_INSTRUCTIONS') || `Ask ${r.name} how they are feeling right now, whether they have eaten and slept well, and whether there is anything worrying or unusual today.`;
   document.getElementById('callModal').style.display='block';
 }
@@ -467,7 +467,6 @@ function closeCallModal(){
 async function submitOutboundCall(){
   const toNumber=document.getElementById('callPhone').value.trim();
   const instructions=document.getElementById('callInstructions').value.trim();
-  localStorage.setItem('CARECALL_TARGET_PHONE', toNumber);
   localStorage.setItem('CARECALL_LAST_INSTRUCTIONS', instructions);
 
   try{

@@ -21,6 +21,24 @@ function asNumber(value: unknown): number | null {
   return null;
 }
 
+function normalizePhoneCandidate(value: unknown): string | null {
+  const text = asString(value)?.replace(/\s+/g, "");
+  if (!text) {
+    return null;
+  }
+  return /^\+[1-9]\d{7,14}$/.test(text) ? text : null;
+}
+
+function firstPhone(...values: unknown[]): string | null {
+  for (const value of values) {
+    const phoneNumber = normalizePhoneCandidate(value);
+    if (phoneNumber) {
+      return phoneNumber;
+    }
+  }
+  return null;
+}
+
 function secondsBetween(start: string | null, end: string | null): number | null {
   if (!start || !end) {
     return null;
@@ -69,21 +87,73 @@ function extractTranscript(data: AnyRecord): TranscriptTurn[] {
     .filter((turn) => turn.message.length > 0);
 }
 
-function extractCallerPhone(metadata: AnyRecord): string | null {
+function extractDynamicVariables(data: AnyRecord): AnyRecord {
+  const clientData = asRecord(data.conversation_initiation_client_data);
+  const dynamicVariables = asRecord(clientData.dynamic_variables);
+  const metadataDynamicVariables = asRecord(asRecord(data.metadata).dynamic_variables);
+  return { ...metadataDynamicVariables, ...dynamicVariables };
+}
+
+function extractCallerPhone(metadata: AnyRecord, data: AnyRecord): string | null {
   const phoneCall = asRecord(metadata.phone_call);
   const phoneCallBody = asRecord(phoneCall.body);
+  const dynamicVariables = extractDynamicVariables(data);
+  const callType = asString(dynamicVariables.call_type)?.toLowerCase() ?? "";
+  const targetPhoneNumber = firstPhone(
+    dynamicVariables.target_phone_number,
+    dynamicVariables.patient_phone_number,
+    dynamicVariables.customer_phone_number,
+    dynamicVariables.to_number,
+    dynamicVariables.toNumber
+  );
+  const direction = (
+    asString(metadata.direction) ??
+    asString(phoneCallBody.direction) ??
+    asString(phoneCallBody.Direction) ??
+    ""
+  ).toLowerCase();
+
+  const inboundPhone = firstPhone(
+    metadata.from_number,
+    metadata.fromNumber,
+    metadata.caller_number,
+    metadata.callerNumber,
+    metadata.phone_number,
+    metadata.phoneNumber,
+    phoneCallBody.from,
+    phoneCallBody.From,
+    phoneCallBody.caller
+  );
+
+  const outboundPhone = firstPhone(
+    metadata.to_number,
+    metadata.toNumber,
+    phoneCallBody.to,
+    phoneCallBody.To
+  );
+
+  if (targetPhoneNumber && (callType === "manual" || callType === "scheduled" || direction.includes("outbound"))) {
+    return targetPhoneNumber;
+  }
+
+  if (direction.includes("outbound") || callType === "manual" || callType === "scheduled") {
+    return outboundPhone ?? targetPhoneNumber ?? inboundPhone;
+  }
+  if (direction.includes("inbound") || callType === "inbound" || callType === "unscheduled") {
+    return inboundPhone ?? outboundPhone;
+  }
+
   return (
-    asString(metadata.from_number) ??
-    asString(metadata.fromNumber) ??
-    asString(metadata.caller_number) ??
-    asString(metadata.callerNumber) ??
-    asString(metadata.caller_id) ??
-    asString(metadata.callerId) ??
-    asString(metadata.phone_number) ??
-    asString(metadata.phoneNumber) ??
-    asString(phoneCallBody.from) ??
-    asString(phoneCallBody.From) ??
-    asString(phoneCallBody.caller)
+    firstPhone(
+      metadata.caller_number,
+      metadata.callerNumber,
+      metadata.phone_number,
+      metadata.phoneNumber,
+      phoneCallBody.caller
+    ) ??
+    inboundPhone ??
+    outboundPhone ??
+    targetPhoneNumber
   );
 }
 
@@ -158,7 +228,7 @@ export function normalizeElevenLabsWebhook(payload: unknown): NormalizedWebhookC
 
   return {
     elevenLabsConversationId: asString(data.conversation_id) ?? asString(root.conversation_id),
-    callerPhoneNumber: extractCallerPhone(metadata),
+    callerPhoneNumber: extractCallerPhone(metadata, data),
     calledAt: extractCalledAt(metadata, data, root.event_timestamp),
     durationSeconds: extractDuration(metadata, data),
     transcript,
