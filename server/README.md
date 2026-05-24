@@ -78,6 +78,16 @@ npm run dev
 
 Storage buckets can be added later for audio files or raw webhook archives. For the first dashboard, structured call data belongs in Postgres.
 
+## Reset demo data
+
+To clear the dashboard before a demo while keeping the configured customer ready:
+
+```bash
+npm run db:clear-demo-data
+```
+
+This deletes stored calls and caller rows. New callers will appear again after the next inbound or outbound ElevenLabs webhook.
+
 ## Dashboard login
 
 The frontend never stores the password. It posts credentials to the backend and stores a short-lived signed token in browser storage.
