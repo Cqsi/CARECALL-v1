@@ -5,6 +5,7 @@ import { createDatabase } from "./db.js";
 import { requireAuth } from "./middleware/auth.js";
 import { authRouter } from "./routes/auth.js";
 import { callsRouter } from "./routes/calls.js";
+import { createCallersRouter } from "./routes/callers.js";
 import { createDashboardRouter } from "./routes/dashboard.js";
 import { createElevenLabsRouter } from "./routes/elevenlabs.js";
 import { healthRouter } from "./routes/health.js";
@@ -42,6 +43,7 @@ async function main(): Promise<void> {
   app.use("/api/auth", authRouter);
   app.use("/api/dashboard", requireAuth, createDashboardRouter(db));
   app.use("/api/calls", requireAuth, callsRouter);
+  app.use("/api/callers", requireAuth, createCallersRouter(db));
   app.use("/api/elevenlabs", createElevenLabsRouter(db));
 
   app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

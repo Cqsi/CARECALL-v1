@@ -15,12 +15,20 @@ export type DashboardCall = {
   transcript: TranscriptTurn[];
 };
 
+export type DashboardCaller = {
+  id: string;
+  name: string;
+  phoneNumber: string;
+  latestCall: DashboardCall | null;
+};
+
 export type DashboardPayload = {
   customer: {
     id: string;
     name: string;
   };
   latestCall: DashboardCall | null;
+  callers: DashboardCaller[];
 };
 
 export type NormalizedWebhookCall = {

@@ -73,8 +73,12 @@ function extractCallerPhone(metadata: AnyRecord): string | null {
   const phoneCall = asRecord(metadata.phone_call);
   const phoneCallBody = asRecord(phoneCall.body);
   return (
+    asString(metadata.from_number) ??
+    asString(metadata.fromNumber) ??
     asString(metadata.caller_number) ??
     asString(metadata.callerNumber) ??
+    asString(metadata.caller_id) ??
+    asString(metadata.callerId) ??
     asString(metadata.phone_number) ??
     asString(metadata.phoneNumber) ??
     asString(phoneCallBody.from) ??

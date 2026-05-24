@@ -107,9 +107,56 @@ function transcriptFromBackend(call){
   }));
 }
 
+function residentFromCaller(caller, fallbackName){
+  const latest=caller.latestCall;
+  const status=statusFromSentiment(latest?.wellbeingSentiment);
+  const summary=latest?.summary || 'No completed checkup call has been stored for this caller yet.';
+  return {
+    id:caller.id,
+    callerId:caller.id,
+    phoneNumber:caller.phoneNumber,
+    name:caller.name || fallbackName || 'Unknown caller',
+    age:'Caller',
+    district:caller.phoneNumber || 'Phone number pending',
+    status,
+    trend:trendFromScore(latest?.wellbeingScore),
+    last:formatLastCall(latest?.calledAt),
+    dir:'in',
+    dur:formatDuration(latest?.durationSeconds),
+    flag: status === 'ok' ? null : {
+      level: status === 'alert' ? 'red' : 'amber',
+      title:`${caller.name || 'Caller'} — ${latest?.wellbeingSentiment || 'wellbeing pending'}`,
+      detail:summary
+    },
+    transcript: latest ? transcriptFromBackend(latest) : [{r:'ai', t:'Waiting for this caller’s first completed CareCall conversation.'}]
+  };
+}
+
 function applyDashboardPayload(payload){
   const customerName=payload?.customer?.name || 'Casimir';
   const latest=payload?.latestCall;
+  const backendCallers=payload?.callers || [];
+  if(backendCallers.length){
+    residents=backendCallers.map((caller,index)=>residentFromCaller(caller, index===0?customerName:null));
+    callLog=backendCallers
+      .filter(caller=>caller.latestCall)
+      .map(caller=>({
+        resId:caller.id,
+        dir:'in',
+        sub:`Checkup · ${caller.latestCall.wellbeingSentiment || 'unknown'} · ${caller.phoneNumber || 'unknown number'}`,
+        dur:formatDuration(caller.latestCall.durationSeconds),
+        time:formatCallTime(caller.latestCall.calledAt)
+      }));
+    alerts=residents.filter(r=>r.flag).map(r=>({
+      resId:r.id,
+      level:r.flag.level,
+      title:r.flag.title,
+      desc:r.flag.detail,
+      when:r.last
+    }));
+    return;
+  }
+
   const status=statusFromSentiment(latest?.wellbeingSentiment);
   const summary=latest?.summary || 'No backend call has been received yet. Run the mock webhook or complete an ElevenLabs call to populate this checkup.';
   const transcript=latest ? transcriptFromBackend(latest) : [
@@ -118,6 +165,8 @@ function applyDashboardPayload(payload){
 
   residents = [{
     id:'backend-customer',
+    callerId:null,
+    phoneNumber:latest?.callerPhoneNumber || '',
     name:customerName,
     age:'Demo',
     district:'Builder account',
@@ -282,6 +331,7 @@ function openResident(id){
   html+=`<div class="dr-actions">
     <button class="primary" onclick="drawerAction('escalate','${r.id}')">Escalate to nurse</button>
     <button onclick="drawerAction('call','${r.id}')">Call now</button>
+    ${r.callerId?`<button onclick="drawerAction('rename','${r.id}')">Edit name</button>`:''}
     <button onclick="drawerAction('resolve','${r.id}')">Mark reviewed</button>
   </div>`;
   html+=`<div class="dr-sec-label">Call transcript</div>`;
@@ -300,14 +350,48 @@ function drawerAction(kind,id){
     openOutboundCallModal(r);
     return;
   }
+  if(kind==='rename'){
+    renameCaller(r);
+    return;
+  }
   const msgs={escalate:`Escalated ${r.name} to the on-call nurse.`,call:`Placing a call to ${r.name}…`,resolve:`${r.name} marked as reviewed.`};
   showToast(kind==='call'?'Calling…':'Done', msgs[kind]);
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
 
+async function renameCaller(r){
+  const nextName=prompt('Caller name', r.name);
+  if(nextName===null) return;
+  const name=nextName.trim();
+  if(!name){
+    showToast('Name not saved', 'Caller name cannot be empty.');
+    return;
+  }
+  try{
+    const res=await fetch(`${API_BASE_URL}/api/callers/${encodeURIComponent(r.callerId)}`, {
+      method:'PATCH',
+      headers:{'content-type':'application/json', ...authHeaders()},
+      body:JSON.stringify({name})
+    });
+    if(res.status===401){
+      doLogout();
+      throw new Error('Please sign in again.');
+    }
+    const payload=await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(payload.error || `Backend returned ${res.status}`);
+    await refreshDashboardData();
+    renderAll();
+    openResident(payload.id);
+    showToast('Caller updated', `${name} is now shown in the dashboard.`);
+  }catch(err){
+    console.error(err);
+    showToast('Rename failed', err.message || 'Could not update caller name.');
+  }
+}
+
 function openOutboundCallModal(r){
   document.getElementById('callModalSub').textContent=`Start an outbound CareCall check-in for ${r.name}.`;
-  document.getElementById('callPhone').value=localStorage.getItem('CARECALL_TARGET_PHONE') || '';
+  document.getElementById('callPhone').value=r.phoneNumber || localStorage.getItem('CARECALL_TARGET_PHONE') || '';
   document.getElementById('callInstructions').value=localStorage.getItem('CARECALL_LAST_INSTRUCTIONS') || `Ask ${r.name} how they are feeling right now, whether they have eaten and slept well, and whether there is anything worrying or unusual today.`;
   document.getElementById('callModal').style.display='block';
 }
