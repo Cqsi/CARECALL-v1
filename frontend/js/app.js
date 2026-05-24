@@ -396,7 +396,7 @@ async function submitNurseEscalation(){
   const nurse=nurses[Number(document.getElementById('nurseSelect').value)] || nurses[0];
   const summary=document.getElementById('nurseSummary').value.trim();
   try{
-    showToast('Sending SMS', `Sending escalation to ${nurse.name}…`, 3000);
+    showToast('Calling nurse', `Starting escalation call to ${nurse.name}...`, 3000);
     const res=await fetch(`${API_BASE_URL}/api/calls/escalate`, {
       method:'POST',
       headers:{'content-type':'application/json', ...authHeaders()},
@@ -416,10 +416,10 @@ async function submitNurseEscalation(){
     const payload=await res.json().catch(()=>({}));
     if(!res.ok) throw new Error(payload.error || payload.message || `Backend returned ${res.status}`);
     closeNurseModal();
-    showToast('SMS sent', `${nurse.name} received the escalation summary.`);
+    showToast('Nurse call started', `${nurse.name} is being called with the escalation summary.`);
   }catch(err){
     console.error(err);
-    showToast('Escalation failed', err.message || 'Could not send the nurse SMS.');
+    showToast('Escalation failed', err.message || 'Could not call the nurse.');
   }
 }
 

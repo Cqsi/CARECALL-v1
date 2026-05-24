@@ -80,7 +80,7 @@ Storage buckets can be added later for audio files or raw webhook archives. For 
 
 ## Dashboard login
 
-The frontend never stores the password. It posts credentials to the backend and stores a short-lived signed token in `sessionStorage`.
+The frontend never stores the password. It posts credentials to the backend and stores a short-lived signed token in browser storage.
 
 Set these in `.env`:
 
@@ -97,16 +97,17 @@ Generate a local secret with:
 node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 ```
 
-## Nurse escalation SMS
+## Nurse escalation calls
 
-The dashboard can send a nurse an SMS with the current escalation summary.
+The dashboard can start an ElevenLabs outbound call to a nurse with the current escalation summary.
 
 Set:
 
 ```env
-TWILIO_ACCOUNT_SID=...
-TWILIO_AUTH_TOKEN=...
-TWILIO_FROM_NUMBER=...
+ELEVENLABS_API_KEY=...
+ELEVENLABS_NURSE_AGENT_ID=...
+ELEVENLABS_AGENT_PHONE_NUMBER_ID=...
+ELEVENLABS_OUTBOUND_PROVIDER=twilio
 ```
 
 The frontend currently includes one nurse option:
