@@ -97,14 +97,16 @@ Generate a local secret with:
 node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 ```
 
-## Nurse escalation calls
+## Nurse escalation SMS
 
-The dashboard can call a nurse through a separate ElevenLabs agent. It reuses the same ElevenLabs phone number ID, but sets a different `agent_id`.
+The dashboard can send a nurse an SMS with the current escalation summary.
 
 Set:
 
 ```env
-ELEVENLABS_NURSE_AGENT_ID=agent_...
+TWILIO_ACCOUNT_SID=...
+TWILIO_AUTH_TOKEN=...
+TWILIO_FROM_NUMBER=...
 ```
 
 The frontend currently includes one nurse option:

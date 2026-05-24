@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { config } from "../config.js";
 import { startElevenLabsOutboundCall } from "../services/elevenlabsOutbound.js";
+import { sendSms } from "../services/sms.js";
 
 export const callsRouter = Router();
 
@@ -31,40 +32,26 @@ callsRouter.post("/escalate", async (req, res) => {
     const summary = String(req.body?.summary ?? "A CareCall conversation was flagged for nurse follow-up.");
     const latestCallAt = String(req.body?.latestCallAt ?? "");
 
-    if (!config.elevenLabsNurseAgentId) {
-      res.status(503).json({ error: "Missing ElevenLabs nurse agent configuration: ELEVENLABS_NURSE_AGENT_ID" });
-      return;
-    }
+    const message = [
+      `CareCall escalation${nurseName ? ` for ${nurseName}` : ""}.`,
+      `Patient: ${patientName}.`,
+      patientPhoneNumber ? `Patient phone: ${patientPhoneNumber}.` : "",
+      latestCallAt ? `Latest call: ${latestCallAt}.` : "",
+      `Summary: ${summary}`,
+      "Please review the CareCall dashboard for the full transcript."
+    ].filter(Boolean).join(" ");
 
-    const result = await startElevenLabsOutboundCall({
-      agentId: config.elevenLabsNurseAgentId,
+    const result = await sendSms({
       toNumber: nursePhoneNumber,
-      callType: "nurse_escalation",
-      firstMessage: `Hi ${nurseName || "there"}, this is CareCall calling with a patient escalation.`,
-      instructions: [
-        `Call nurse ${nurseName || "the selected nurse"} about a CareCall escalation.`,
-        `Patient: ${patientName}.`,
-        patientPhoneNumber ? `Patient phone number: ${patientPhoneNumber}.` : "",
-        latestCallAt ? `Latest call time: ${latestCallAt}.` : "",
-        `Situation summary: ${summary}`,
-        "Confirm that the nurse has understood the situation and ask if they have any questions. Answer only from the provided context. If asked for information you do not have, say that the dashboard contains the full transcript."
-      ].filter(Boolean).join("\n"),
-      dynamicVariables: {
-        nurse_name: nurseName,
-        nurse_phone_number: nursePhoneNumber,
-        patient_name: patientName,
-        patient_phone_number: patientPhoneNumber,
-        escalation_summary: summary,
-        latest_call_at: latestCallAt
-      }
+      message
     });
 
     res.status(200).json(result);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Could not escalate to nurse.";
-    const status = message.startsWith("Missing ElevenLabs")
+    const message = error instanceof Error ? error.message : "Could not send nurse escalation SMS.";
+    const status = message.startsWith("Missing SMS")
       ? 503
-      : message.startsWith("ElevenLabs outbound call failed")
+      : message.startsWith("SMS send failed")
         ? 502
         : 400;
     res.status(status).json({ error: message });
