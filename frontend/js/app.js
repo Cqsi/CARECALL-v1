@@ -26,6 +26,8 @@ async function doLogin(){
     localStorage.setItem('CARECALL_AUTH_EMAIL', e);
     document.getElementById('signedInMeta').textContent=`Signed in as ${e}`;
     document.getElementById('pass').value='';
+    closeNurseModal();
+    closeCallModal();
     document.getElementById('login').style.display='none';
     document.getElementById('app').style.display='block';
     await refreshDashboardData();
@@ -43,6 +45,8 @@ function doLogout(){
   document.getElementById('login').style.display='flex';
   document.getElementById('pass').value='';
   closeDrawer();
+  closeNurseModal();
+  closeCallModal();
 }
 document.getElementById('pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
@@ -516,6 +520,8 @@ async function resumeSession(){
   document.getElementById('signedInMeta').textContent=`Signed in as ${email}`;
   document.getElementById('login').style.display='none';
   document.getElementById('app').style.display='block';
+  closeNurseModal();
+  closeCallModal();
   await refreshDashboardData();
   renderAll();
 }
