@@ -4,7 +4,6 @@ const nurses = [
   {name:'Daniel', phoneNumber:'+358409393075'}
 ];
 let pendingEscalationResidentId = null;
-let dashboardRefreshTimer = null;
 
 function authHeaders(){
   return authToken ? { authorization: `Bearer ${authToken}` } : {};
@@ -33,7 +32,6 @@ async function doLogin(){
     document.getElementById('app').style.display='block';
     await refreshDashboardData();
     renderAll();
-    startDashboardPolling();
   }catch(err){
     document.getElementById('loginErr').textContent=err.message || 'Incorrect email or password.';
     document.getElementById('loginErr').style.display='block';
@@ -41,7 +39,6 @@ async function doLogin(){
 }
 function doLogout(){
   authToken='';
-  stopDashboardPolling();
   localStorage.removeItem('CARECALL_AUTH_TOKEN');
   localStorage.removeItem('CARECALL_AUTH_EMAIL');
   document.getElementById('app').style.display='none';
@@ -225,22 +222,6 @@ async function refreshDashboardData(){
     console.warn('Using mock dashboard data because the backend could not be reached.', err);
     useMockData();
     showToast('Backend offline', 'Showing local mock data until the server is available.');
-  }
-}
-
-function startDashboardPolling(){
-  stopDashboardPolling();
-  dashboardRefreshTimer=setInterval(async ()=>{
-    if(!authToken || document.hidden) return;
-    await refreshDashboardData();
-    renderAll();
-  }, 10000);
-}
-
-function stopDashboardPolling(){
-  if(dashboardRefreshTimer){
-    clearInterval(dashboardRefreshTimer);
-    dashboardRefreshTimer=null;
   }
 }
 const statusBadge = s => ({
@@ -542,7 +523,6 @@ async function resumeSession(){
   closeCallModal();
   await refreshDashboardData();
   renderAll();
-  startDashboardPolling();
 }
 
 resumeSession();

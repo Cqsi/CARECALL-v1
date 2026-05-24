@@ -64,9 +64,6 @@ export function createElevenLabsRouter(db: CareCallDatabase): Router {
 
       const call = normalizeElevenLabsWebhook(payload);
       const id = await db.saveCall(config.customerName, call);
-      console.log(
-        `Stored ElevenLabs call ${id}: conversation=${call.elevenLabsConversationId ?? "unknown"} phone=${call.callerPhoneNumber ?? "missing"} turns=${call.transcript.length}`
-      );
       res.status(200).json({ ok: true, id });
     } catch (error) {
       next(error);

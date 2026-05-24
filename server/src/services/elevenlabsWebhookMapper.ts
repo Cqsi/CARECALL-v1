@@ -39,32 +39,6 @@ function firstPhone(...values: unknown[]): string | null {
   return null;
 }
 
-function findPhoneByKey(value: unknown, keyPattern: RegExp): string | null {
-  const stack: unknown[] = [value];
-  while (stack.length) {
-    const current = stack.pop();
-    if (!current || typeof current !== "object") {
-      continue;
-    }
-    if (Array.isArray(current)) {
-      stack.push(...current);
-      continue;
-    }
-    for (const [key, child] of Object.entries(current as AnyRecord)) {
-      if (keyPattern.test(key)) {
-        const phoneNumber = normalizePhoneCandidate(child);
-        if (phoneNumber) {
-          return phoneNumber;
-        }
-      }
-      if (child && typeof child === "object") {
-        stack.push(child);
-      }
-    }
-  }
-  return null;
-}
-
 function secondsBetween(start: string | null, end: string | null): number | null {
   if (!start || !end) {
     return null;
@@ -140,32 +114,22 @@ function extractCallerPhone(metadata: AnyRecord, data: AnyRecord): string | null
   ).toLowerCase();
 
   const inboundPhone = firstPhone(
-    dynamicVariables.inbound_phone_number,
-    dynamicVariables.caller_phone_number,
     metadata.from_number,
     metadata.fromNumber,
     metadata.caller_number,
     metadata.callerNumber,
     metadata.phone_number,
     metadata.phoneNumber,
-    phoneCall.external_number,
-    phoneCall.externalNumber,
-    phoneCall.caller_number,
-    phoneCall.callerNumber,
     phoneCallBody.from,
     phoneCallBody.From,
-    phoneCallBody.caller,
-    findPhoneByKey(data, /^(from|caller|external).*number$/i)
+    phoneCallBody.caller
   );
 
   const outboundPhone = firstPhone(
     metadata.to_number,
     metadata.toNumber,
-    phoneCall.to_number,
-    phoneCall.toNumber,
     phoneCallBody.to,
-    phoneCallBody.To,
-    findPhoneByKey(data, /^to.*number$/i)
+    phoneCallBody.To
   );
 
   if (targetPhoneNumber && (callType === "manual" || callType === "scheduled" || direction.includes("outbound"))) {
